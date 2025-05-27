@@ -78,10 +78,10 @@
 		<div class="input-group mb-3">
 		
 		<input class="form-control" id="rollout-time" min="1" title="Tempo em segundos" type="number" value="90"/>
-		<button class="btn btn-basic" onclick="startRollout()" title="Iniciar">▶</button>
-		<button class="btn btn-basic" onclick="pauseRollout()" title="Pausar">❚❚</button>
-		<button class="btn btn-basic" onclick="continueRollout()" title="Continuar">❚►</button>
-		<button class="btn btn-basic" onclick="stopRollout()" title="Parar">■</button>
+		<button class="btn btn-default" onclick="startRollout()" title="Iniciar">▶</button>
+		<button class="btn btn-default" onclick="pauseRollout()" title="Pausar">❚❚</button>
+		<button class="btn btn-default" onclick="continueRollout()" title="Continuar">❚►</button>
+		<button class="btn btn-default" onclick="stopRollout()" title="Parar">■</button>
 		</div>
 
 		  <!-- Filtros -->
@@ -125,6 +125,7 @@
               fetch(file.download_url)
                 .then(res => res.text())
                 .then(texto => {
+					stopRollout();
 					const linhas = texto.split('\n');
 					const htmlFormatado = linhas.map((linha, index) => {
 					  const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
