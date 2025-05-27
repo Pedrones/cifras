@@ -78,11 +78,12 @@
 		  <!-- Rolagem de telas -->
 		<div class="input-group mb-3">
 		
-		<input class="form-control" id="rollout-time" min="1" title="Tempo em segundos" type="number" value="90"/>
-		<button class="btn btn-default" onclick="startRollout()" title="Iniciar"><i class="bi bi-play-fill"></i></button>
-		<button class="btn btn-default" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
-		<button class="btn btn-default" onclick="continueRollout()" title="Continuar"><i class="bi bi-fast-forward-fill"></i></button>
-		<button class="btn btn-default" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+		<input class="form-control" style="font-size: smaller;" id="wait-time" min="0" title="Espera para scroll" type="number" value="5"/>
+		<input class="form-control" style="font-size: smaller;" id="rollout-time" min="0" title="Scroll em segundos" type="number" value="90"/>
+		<button class="btn btn-outline-secondary" onclick="startRollout()" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+		<button class="btn btn-outline-secondary" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+		<button class="btn btn-outline-secondary" onclick="continueRollout()" title="Continuar"><i class="bi bi-fast-forward-fill"></i></button>
+		<button class="btn btn-outline-secondary" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
 		</div>
 
 		  <!-- Filtros -->
