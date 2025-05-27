@@ -141,7 +141,8 @@
 					}).join('<br>');
 					txtViewer.innerHTML = htmlFormatado;
 					txtViewer.scrollTop = 0;
-					startRollout();
+					document.getElementById('right-panel').scrollTop = 0;
+					//startRollout();
                 })
                 .catch(err => {
                   txtViewer.textContent = "Erro ao carregar o arquivo.";
@@ -186,6 +187,7 @@
     const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
     const panel = document.getElementById('right-panel');
     panel.scrollTop = 0;
+    document.getElementById('txtViewer').scrollTop = 0;
     scrollHeight = panel.scrollHeight - panel.clientHeight;
     step = scrollHeight / (seconds / 100);
     scrolled = 0;
