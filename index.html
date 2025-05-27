@@ -141,6 +141,7 @@
 					}).join('<br>');
 					txtViewer.innerHTML = htmlFormatado;
 					txtViewer.scrollTop = 0;
+					startRollout();
                 })
                 .catch(err => {
                   txtViewer.textContent = "Erro ao carregar o arquivo.";
