@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<title>Visualizador de Cifras</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+    body, html {
+      height: 100%;
+    }
+    #left-panel {
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid #ccc;
+    }
+    #right-panel {
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      position: relative;
+    }
+    .song-div {
+      display: block;
+    }
+    .song-div.active {
+      display: block;
+    }
+    #pdfViewer {
+      width: 100%;
+      height: 80vh;
+      border: none;
+    }
+		
+	.list-group-item:hover {
+	  cursor: pointer !important;
+	}
+
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+	<div class="row">
+	<!-- Painel Esquerdo -->
+	<div class="col-md-3 p-3" id="left-panel">
+
+		<div style="display:none">
+		  <!-- Abas -->
+		  <ul class="nav nav-tabs" id="abasExemplo" role="tablist">
+			<li class="nav-item" role="presentation">
+			  <button class="nav-link active" id="arqLoc-tab" data-bs-toggle="tab" data-bs-target="#arqLoc" type="button" role="tab" aria-controls="arqLoc" aria-selected="true">Local</button>
+			</li>
+			<li class="nav-item" role="presentation">
+			  <button class="nav-link" id="arqGdr-tab" data-bs-toggle="tab" data-bs-target="#arqGdr" type="button" role="tab" aria-controls="arqGdr" aria-selected="false">Google Drive</button>
+			</li>
+		  </ul>
+
+		  <!-- Conteúdo das Abas -->
+
+		  <div class="tab-content p-3 border border-top-0" id="abasExemploConteudo">
+			<div class="tab-pane fade show active" id="arqLoc" role="tabpanel" aria-labelledby="arqLoc-tab">
+				<br>
+				<input accept=".txt,.pdf,.doc*,.html,.rtf" class="form-control" directory="True" id="folderInput" multiple="True" type="file" webkitdirectory="True"/>
+			
+			</div>
+			<div class="tab-pane fade" id="arqGdr" role="tabpanel" aria-labelledby="arqGdr-tab">
+				<br>	
+				<input class="form-control" id="cloud-link" placeholder="https://drive.google.com/..." type="url"/>
+				<input class="form-control mb-3" id="api-key" placeholder="Cole sua chave de API aqui" type="text"/>
+				<button class="btn btn-outline-secondary w-100 mb-3" onclick="loadDriveFiles()">Carregar Arquivos do Drive</button>
+			</div>
+		  </div>
+		</div>
+
+		  <!-- Rolagem de telas -->
+		<h5 class="xxmt-4">Rollout</h5>
+		<div class="input-group mb-3">
+		<input class="form-control" id="rollout-time" min="1" title="Tempo em segundos" type="number" value="90"/>
+		<button class="btn btn-primary" onclick="startRollout()" title="Iniciar">▶</button>
+		<button class="btn btn-warning" onclick="pauseRollout()" title="Pausar">❚❚</button>
+		<button class="btn btn-success" onclick="continueRollout()" title="Continuar">❚►</button>
+		<button class="btn btn-danger" onclick="stopRollout()" title="Parar">■</button>
+		</div>
+
+		  <!-- Filtros -->
+		<h5>Filtros</h5>
+		<input class="form-control mb-3" id="search-filter" placeholder="Buscar música..." type="text"/>
+
+		  <!-- Lista de musicas -->
+		<h5>Músicas</h5>
+		<ul class="list-group" id="songList" style="font-size: 12px;">
+
+		</ul>
+
+	</div>
+
+	<!-- Painel Direito -->
+	<div class="col-md-9" id="right-panel">
+		<!-- Conteudo do arquivo -->
+		<div class="song-div" id="file-content">
+			<!-- Divisões por tipo de arquivo  -->
+			<div    id="txtViewer"></div> 
+			</div>
+		</div>
+	</div>
+</div>
+
+  <script>
+    const usuario = "pedrones";
+    const repositorio = "cifras";
+    const pasta = "cifras";
+
+    fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
+      .then(response => response.json())
+      .then(files => {
+        const songList = document.getElementById('songList');
+        const txtViewer = document.getElementById('txtViewer');
+        files.forEach(file => {
+          if (file.name.endsWith('.txt')) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = file.name;
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+              fetch(file.download_url)
+                .then(res => res.text())
+                .then(texto => {
+					const linhas = texto.split('\n');
+					const htmlFormatado = linhas.map((linha, index) => {
+					  const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+					  const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
+					  const linhaTrim = linha.trim();
+
+					  if (index === 0) {
+						return `<h5>${linhaComEspacos}</h5>`;
+					  } else if (linhaTrim.length < 6 || / {3,}/.test(linha)) {
+						return `<strong style="color:red">${linhaComEspacos}</strong>`;
+					  } else {
+						return linhaComEspacos;
+					  }
+					}).join('<br>');
+					txtViewer.innerHTML = htmlFormatado;
+					txtViewer.scrollTop = 0;
+                })
+                .catch(err => {
+                  txtViewer.textContent = "Erro ao carregar o arquivo.";
+                  console.error(err);
+                });
+            };
+            songList.appendChild(li);
+          }
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao acessar a API do GitHub:", error);
+        document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
+      });
+  </script>
+
+
+
+<script>
+  let rolloutInterval;
+  let isPaused = false;
+  let scrolled = 0;
+  let scrollHeight;
+  let step;
+
+  function showSong(id) {
+    document.querySelectorAll('.song-div').forEach(div => div.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  document.getElementById('search-filter').addEventListener('input', filterSongs);
+
+  function filterSongs() {
+    const search = document.getElementById('search-filter').value.toLowerCase();
+    document.querySelectorAll('#songList li').forEach(item => {
+      const matchesSearch = !search || item.textContent.toLowerCase().includes(search);
+      item.style.display = matchesSearch ? '' : 'none';
+    });
+  }
+
+  function startRollout() {
+    const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
+    const panel = document.getElementById('right-panel');
+    panel.scrollTop = 0;
+    scrollHeight = panel.scrollHeight - panel.clientHeight;
+    step = scrollHeight / (seconds / 100);
+    scrolled = 0;
+    isPaused = false;
+    rolloutInterval = setInterval(() => {
+      if (scrolled >= scrollHeight || isPaused) {
+        clearInterval(rolloutInterval);
+      } else {
+        panel.scrollTop += step;
+        scrolled += step;
+      }
+    }, 100);
+  }
+
+  function pauseRollout() {
+    isPaused = true;
+  }
+
+  function continueRollout() {
+    if (!isPaused) return;
+    isPaused = false;
+    const panel = document.getElementById('right-panel');
+    rolloutInterval = setInterval(() => {
+      if (scrolled >= scrollHeight || isPaused) {
+        clearInterval(rolloutInterval);
+      } else {
+        panel.scrollTop += step;
+        scrolled += step;
+      }
+    }, 100);
+  }
+
+  function stopRollout() {
+    clearInterval(rolloutInterval);
+    isPaused = false;
+  }
+
+
+ 
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
