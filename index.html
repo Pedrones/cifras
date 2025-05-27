@@ -78,10 +78,10 @@
 		<div class="input-group mb-3">
 		
 		<input class="form-control" id="rollout-time" min="1" title="Tempo em segundos" type="number" value="90"/>
-		<button class="btn btn-primary" onclick="startRollout()" title="Iniciar">▶</button>
-		<button class="btn btn-warning" onclick="pauseRollout()" title="Pausar">❚❚</button>
-		<button class="btn btn-success" onclick="continueRollout()" title="Continuar">❚►</button>
-		<button class="btn btn-danger" onclick="stopRollout()" title="Parar">■</button>
+		<button class="btn btn-basic" onclick="startRollout()" title="Iniciar">▶</button>
+		<button class="btn btn-basic" onclick="pauseRollout()" title="Pausar">❚❚</button>
+		<button class="btn btn-basic" onclick="continueRollout()" title="Continuar">❚►</button>
+		<button class="btn btn-basic" onclick="stopRollout()" title="Parar">■</button>
 		</div>
 
 		  <!-- Filtros -->
@@ -142,7 +142,9 @@
 					txtViewer.innerHTML = htmlFormatado;
 					txtViewer.scrollTop = 0;
 					document.getElementById('right-panel').scrollTop = 0;
-					//startRollout();
+					setTimeout(() => {
+					  startRollout();
+					}, 5000); 
                 })
                 .catch(err => {
                   txtViewer.textContent = "Erro ao carregar o arquivo.";
