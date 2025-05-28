@@ -1,85 +1,113 @@
 Ultraje a Rigor - Ciúme
 
-(versão simplificada)
+[Intro]
 
-Intro I:     A  C  D  Dm      (2x)
-             Uôoooooooooo...
+A   C  D  Dm
+  Ô Ô  Ô  Ô
+A   C  D  Dm
+  Ô Ô  Ô  Ô
 
-Intro II:    G  D  C  D  (2x)
-                (solo)
+[Solo 1] G  D  C  D
+         G  D  C  D
 
-G            D       C         D
- Eu quero levar uma vida moderninha
-G        D            C         D
- Deixar minha menininha sair sozinha
-G            D              C           D
- Não ser machista e não bancar o possessivo
-G            D          C            D
- Ser mais seguro e não ser tão impulsivo
+[Primeira Parte]
 
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
+G            D        C         D
+  Eu quero levar uma vida moderninha
+G            D         C         D
+  Deixar minha menininha sair sozinha
+G             D              C           D
+  Não ser machista e não bancar o possessivo
+G             D          C            D
+  Ser mais seguro e não ser tão impulsivo
 
-(Intro II)
+[Refrão]
 
-G            D            C          D
- Meu bem me deixa sempre muito à vontade
-G        D               C            D
- Ela me diz que é muito bom ter liberdade
-G           D             C            D
- Que não à mal nenhum em ter outra amizade
-G          D              C          D
- E que brigar por isso é muita crueldade
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
 
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
+[Solo 1] G  D  C  D
+         G  D  C  D
 
-(solo) G D C D (4x)
+[Segunda Parte]
 
-G            D       C         D
- Eu quero levar uma vida moderninha
-G        D           C          D
- Deixar minha menininha sair sozinha
-G            D              C           D
- Não ser machista e não bancar o possessivo
-G            D          C            D
- Ser mais seguro e não ser tão impulsivo
+G             D            C          D
+  Meu bem me deixa sempre muito à vontade
+G         D               C            D
+  Ela me diz que é muito bom ter liberdade
+G             D             C            D
+  Que não há mal nenhum em ter outra amizade
+G           D              C          D
+  E que brigar por isso é muita crueldade
 
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
-      G            Bm        C   D
-        Mas eu me mordo de ciúme
+[Refrão]
 
-(Intro I e II)
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
 
-Mas eu me mordo de ciúme
-Mas eu me mordo de ciúme
-Ciúme, ciúme (28x)
+[Solo 2] G  D  C  D
+         G  D  C  D
 
-(solo introdução)
+[Primeira Parte]
 
-E |-----10-7---7b8-7----8------7---7------10-7---7b8-7-
-B |-8-8--------------10-----10--10----8-8--------------
-G |----------------------------------------------------
-D |----------------------------------------------------
-A |----------------------------------------------------
-E |----------------------------------------------------
+G            D        C         D
+  Eu quero levar uma vida moderninha
+G            D         C         D
+  Deixar minha menininha sair sozinha
+G             D              C           D
+  Não ser machista e não bancar o possessivo
+G             D          C            D
+  Ser mais seguro e não ser tão impulsivo
 
-E|--------7-10-7------7-| 
-B|10-8--10---------10---| 
-G|----------------------| 
-D|----------------------| 
-A|----------------------| 
-E|----------------------| 
+[Refrão]
 
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
 
+[Ponte]
+
+A   C  D  Dm
+  Ô Ô  Ô  Ô
+A   C  D  Dm
+  Ô Ô  Ô  Ô
+
+[Refrão Final]
+
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
+G            Bm        C  D
+  Mas eu me mordo de ciú_me
+  G      
+Ciúme, (ciúme)
+  Bm      
+Ciúme, (ciúme)
+       C         D
+Eu me mordo de ciúme
+       G            Bm        C D
+Eu me mordo, eu me mordo de ciú_me
+        G           Bm            C
+Eu me mordo, eu me rasgo, eu me acabo
+    D                G                Bm
+Eu falo bobagem, eu faço bobagem, eu dou vexame
+    C        D             G
+Eu faço, eu sigo, eu faço cenas de amor
+Bm   C      D           G
+   Ciúme, ciúme, eu me mordo de ciúmes
+
+[Final] Bm  C  D 
+        G  Bm  C  D
+        G  Bm  C  D  G
 
 ----------------- Acordes -----------------
+A = X 0 2 2 2 0
 Bm = X 2 4 4 3 2
 C = X 3 2 0 1 0
 D = X X 0 2 3 2
-G = 3 2 0 0 0 3
+Dm = X X 0 2 3 1
+G = 3 2 0 0 3 3

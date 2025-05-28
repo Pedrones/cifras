@@ -1,9 +1,9 @@
 Rita Lee - Agora Só Falta Você
 
-[Intro] Am  F  Am  F
-        Am  F  Am  F
-        Am  F  Am  F
-        Am  F  G
+[Intro] Am  F  Am  F 
+        Am  F  Am  F 
+        Am  F  Am  F 
+        Am  F  G 
 
 [Primeira Parte]
 
@@ -60,8 +60,8 @@ Agora só falta você, iê, iê
   Bb      F       C
 Agora só falta você
 
-[Solo] Am  F  D  G
-       Am  F  D  G
+[Solo] Am  F  D  G 
+       Am  F  D  G 
        Am  F  Am  G
        F  D  G
 
@@ -97,7 +97,6 @@ Agora só falta você, aaa
 Agora só falta você, iê, iê
   Bb      F       C
 Agora só falta você
-
 
 ----------------- Acordes -----------------
 Am = X 0 2 2 1 0

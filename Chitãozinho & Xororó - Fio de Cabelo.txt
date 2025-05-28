@@ -12,47 +12,37 @@ Qualquer coisa serve para relembrar
 Um vestido velho da mulher amada
              A
 Tem muito valor
+
                             B7
 Aquele restinho do perfume dela
                E
-Que ficou no frasco, sobre a penteadeira
+Que ficou no frasco
+
+Sobre a penteadeira
                   B7
-Mostrando que o quarto já foi o cenário
-               E  (Frase 1)
-De um grande amor
-
-[Tab - Frase 1]
-
-             B7
-E|------------------------------------------| 
-B|------------------------------------------| 
-G|------------------------------------------| 
-D|--2--1------------------------------------| 
-A|--------4--2------------------------------| 
-E|------------------------------------------| 
+Mostrando que o quarto
+                              E    B/D#
+Já foi o cenário de um grande amor
 
 [Refrão]
 
-   B7
-E hoje o que encontrei
+C#m B7
+E  hoje o que encontrei
                  E
 Me deixou mais triste
                         B7
 Um pedacinho dela que existe
-             A
-Um fio de cabelo
-            E (Frase 1)
-No meu paletó
-     B7
+             A              E  B/D#
+Um fio de cabelo no meu paletó
+
+ C#m B7
 Lembrei de tudo entre nós
            E
 Do amor vivido
                           B7
 Aquele fio de cabelo comprido
-              A
-Já esteve grudado
-    B7    E   (Frase 1)
-Em nosso suor
+              A      B7    E   B/D# C#m
+Já esteve grudado em nosso suor
 
 ( B7  E  B7  E )
 
@@ -74,36 +64,34 @@ De ir para a cama
 A gente começa a esperar por quem ama
 
 Na impressão que ela
-          E    (Frase 1)
+          E     B/D#
 Venha se deitar
 
 [Refrão]
 
-   B7
-E hoje o que encontrei
+C#m B7
+E  hoje o que encontrei
                  E
 Me deixou mais triste
                         B7
 Um pedacinho dela que existe
-             A
-Um fio de cabelo
-            E (Frase 1)
-No meu paletó
-     B7
+             A              E  B/D#
+Um fio de cabelo no meu paletó
+
+ C#m B7
 Lembrei de tudo entre nós
            E
 Do amor vivido
                           B7
 Aquele fio de cabelo comprido
-              A
-Já esteve grudado
-    B7    E
-Em nosso suor
+              A      B7    E
+Já esteve grudado em nosso suor
 
 
 ----------------- Acordes -----------------
-Capotraste na 2ª casa
-B*  = X 0 2 2 2 0 - (*C# na forma de B)
-C#7*  = X 2 1 2 0 2 - (*D#7 na forma de C#7)
-F#*  = 0 2 2 1 0 0 - (*G# na forma de F#)
-F#7*  = 0 X 0 0 1 0 - (*G#7 na forma de F#7)
+A = X 0 2 2 2 0
+B/D# = X 6 X 4 7 7
+B7 = X 2 1 2 0 2
+C#m = X 4 6 6 5 4
+E = 0 2 2 1 0 0
+E7 = 0 2 2 1 3 0

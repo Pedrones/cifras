@@ -3,6 +3,10 @@ Chitãozinho & Xororó - Galopeira
 [Intro] D  G  D  G
         D  G  D  G
 
+[Parte 3 De 4]
+
+[Parte 4 De 4]
+
 [Primeira Parte]
 
 G
@@ -22,7 +26,7 @@ E ao som de suas guitarras
 Quatro guapos a cantar
                 D
 Galopeira, galopeira
-                    G
+                       G
 Eu também entrei a dançar
 
 [Primeira Parte]
@@ -44,7 +48,7 @@ E ao som de suas guitarras
 Quatro guapos a cantar
                 D
 Galopeira, galopeira
-                    G
+                       G   G  D/F#  Em
 Eu também entrei a dançar
 
 [Refrão]
@@ -55,7 +59,7 @@ Galopeeeeeeeeeeeira
 Nunca mais te esquecereeeeeeeeei
      D
 Galopeeeeeeeeeeira
-                    G
+       C      D     G
 Pra matar minha saudade
                  D
 Pra minha felicidade
@@ -63,11 +67,13 @@ Pra minha felicidade
 Paraguai, eu voltarei
                  D
 Pra minha felicidade
-              G
+                   G
 Paraguai, eu voltarei
 
 ( D  G  D  G )
 ( D  G  D  G )
+
+( G  D/F#  Em )
 
 [Refrão]
 
@@ -77,7 +83,7 @@ Galopeeeeeeeeeeeira
 Nunca mais te esquecereeeeeeeeei
      D
 Galopeeeeeeeeeeira
-                    G
+       C      D     G
 Pra matar minha saudade
                  D
 Pra minha felicidade
@@ -85,12 +91,13 @@ Pra minha felicidade
 Paraguai, eu voltarei
                  D
 Pra minha felicidade
-                   G ( G  D  G )
-Paraguai, eu voltarei
+                   G  D  G ( G  D  G )
+Paraguai, eu voltare__e__ei
 
 
 ----------------- Acordes -----------------
 C = X 3 2 0 1 0
 D = X X 0 2 3 2
+D/F# = 2 X 0 2 3 2
 Em = 0 2 2 0 0 0
 G = 3 2 0 0 0 3

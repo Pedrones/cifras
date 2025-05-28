@@ -1,152 +1,152 @@
 Skank - Vamos Fugir
 
-[Intro] Em  D  Em  D
+[Intro] F#m  E  F#m  E
 
-[Primeira Parte] 
+[Primeira Parte]
 
-         G           D
+         A           E4
 Vamos fugir deste lugar, baby
-         Em
+        F#m 
 Vamos fugir
-       C
+       D
 Tô cansado de esperar
-  D                Em
+  E               F#m
 Que você me carregue
-         G
+         A
 Vamos fugir
-             D
+             E4
 Pra outro lugar, baby
-         Em
+         F#m 
 Vamos fugir
-           C
+           D
 Pra onde quer que você vá
-  D                Em
+  E               F#m
 Que você me carregue
 
-[Refrão] 
+[Refrão]
 
-                G
+                A
 Pois diga que irá
-    D      C
+    E      D
 Irajá, Irajá
 
 Pra onde eu só veja você
-                 G
+                 A
 Você veja a mim só
-     D       C
+     E       D
 Marajó, Marajó
 
 Qualquer outro lugar comum
-                  G
+                 A
 Outro lugar qualquer
-      D        C
+      E        D
 Guaporé, Guaporé
 
 Qualquer outro lugar ao sol
-                G
+                A
 Outro lugar ao sul
-      D         C
+      E         D
 Céu azul, Céu azul
 
 Onde haja só o meu corpo nu
-
+                   
 Junto ao seu corpo nu
 
-( Em  D  Em  D )
+( F#m  E  F#m  E )
 
-[Primeira Parte] 
+[Primeira Parte]
 
-         G
+         A
 Vamos fugir
-             D
+             E4
 Pra outro lugar, baby
-         Em
+         F#m 
 Vamos fugir
-          C
+          D
 Pra onde haja um tobogã
-D                     Em
+E                    F#m
 Onde a gente escorregue
 
-         G           D
+         A           E4
 Vamos fugir deste lugar, baby
-         Em
+         F#m 
 Vamos fugir
-       C
+       D
 Tô cansado de esperar
-  D               Em
+  E               F#m
 Que você me carregue
 
-[Refrão] 
+[Refrão]
 
-                G
+                A
 Pois diga que irá
-    D      C
+    E      D
 Irajá, Irajá
 
 Pra onde eu só veja você
-                 G
+                 A
 Você veja a mim só
-     D       C
+     E       D
 Marajó, Marajó
 
 Qualquer outro lugar comum
-                  G
+                 A
 Outro lugar qualquer
-      D        C
+      E        D
 Guaporé, Guaporé
 
 Qualquer outro lugar ao sol
-                G
+                A
 Outro lugar ao sul
-      D         C
+      E         D
 Céu azul, Céu azul
 
 Onde haja só o meu corpo nu
-
+                      
 Junto ao seu corpo nu
 
-( Em  D  Em  D )
+( F#m  E  F#m  E )
 
-[Primeira Parte] 
+[Primeira Parte]
 
-         G
+         A
 Vamos fugir
-             D
+             E4
 Pra outro lugar, baby
-         Em
+         F#m 
 Vamos fugir
-          C
+          D
 Pra onde haja um tobogã
-D                     Em
+E                    F#m
 Onde a gente escorregue
-      C
+      D
 Todo dia de manhã
-  D                    Em
+  E                   F#m 
 Flores que a gente regue
-     C
+     D
 Uma banda de maçã
-D                  Em
+E                  F#m
 Outra banda de reggae
-       C
+       D
 Tô cansado de esperar
-  D                Em
+  E               F#m
 Que você me carregue
-      C
+      D
 Todo dia de manhã
-  D                    Em
+  E                   F#m 
 Flores que a gente regue
 
-( C  D  Em )
-( C  D  Em )
+( D  E  F#m )
+( D  E  F#m )
 
-     C
+     D
 Uma banda de maçã
-D                  Em
+E                  F#m
 Outra banda de reggae
 
 ----------------- Acordes -----------------
-Capotraste na 2ª casa
-D*  = X 3 2 0 1 0 - (*E na forma de D)
-E*  = X X 0 2 3 2 - (*F# na forma de E)
-F#m*  = 0 2 2 0 0 0 - (*G#m na forma de F#m)
-A*  = 3 2 0 0 0 3 - (*B na forma de A)
+A = X 0 2 2 2 0
+D = X X 0 2 3 2
+E = 0 2 2 1 0 0
+E4 = 0 2 2 2 0 0
+F#m = 2 4 4 2 2 2
