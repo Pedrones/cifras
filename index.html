@@ -38,6 +38,13 @@
 	  cursor: pointer !important;
 	}
 
+	#divRolagem {
+	  position: sticky;
+	  top: 0;
+	  background-color: white;
+	  z-index: 1000;
+	  xxpadding: 10px 20px;
+	}
   </style>
 </head>
 <body>
@@ -75,16 +82,6 @@
 		  </div>
 		</div>
 
-		  <!-- Rolagem de telas -->
-		<div class="input-group mb-3">
-		
-		<input class="form-control" style="font-size: smaller;" id="wait-time" min="0" title="Espera para scroll" type="number" value="5"/>
-		<input class="form-control" style="font-size: smaller;" id="rollout-time" min="0" title="Scroll em segundos" type="number" value="90"/>
-		<button class="btn btn-outline-secondary" onclick="startRollout()" title="Iniciar"><i class="bi bi-play-fill"></i></button>
-		<button class="btn btn-outline-secondary" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
-		<button class="btn btn-outline-secondary" onclick="continueRollout()" title="Continuar"><i class="bi bi-fast-forward-fill"></i></button>
-		<button class="btn btn-outline-secondary" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
-		</div>
 
 		  <!-- Filtros -->
 
@@ -97,7 +94,30 @@
 	</div>
 
 	<!-- Painel Direito -->
+	
+
+	
+	
 	<div class="col-md-9" id="right-panel">
+	
+	
+		  <!-- Rolagem de telas -->
+		<div class="d-flex justify-content-end flex-wrap gap-2" id="divRolagem">
+			<div class="input-group mb-3" id="divTempo" style="display:none;">
+				<input class="form-control" style="font-size: smaller;" id="wait-time" min="0" title="Espera para scroll" type="number" value="5"/>
+				<input class="form-control" style="font-size: smaller;" id="rollout-time" min="0" title="Scroll em segundos" type="number" value="90"/>
+			</div>
+		
+		  <div id="divControle" class="d-flex gap-1">
+			<button class="btn btn-outline-secondary" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+			<button class="btn btn-outline-secondary" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+			<button class="btn btn-outline-secondary" onclick="continueRollout()" title="Continuar"><i class="bi bi-fast-forward-fill"></i></button>
+			<button class="btn btn-outline-secondary" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+			<button class="btn btn-outline-secondary" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-dash-circle"></i></button>
+			<button class="btn btn-outline-secondary" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-plus-circle"></i></button>
+		  </div>
+		</div>	
+	
 		<!-- Conteudo do arquivo -->
 		<div class="song-div" id="file-content">
 			<!-- Divisões por tipo de arquivo  -->
@@ -145,9 +165,11 @@
 					txtViewer.innerHTML = htmlFormatado;
 					txtViewer.scrollTop = 0;
 					document.getElementById('right-panel').scrollTop = 0;
+					/*
 					setTimeout(() => {
 					  startRollout();
 					}, 5000); 
+					*/
                 })
                 .catch(err => {
                   txtViewer.textContent = "Erro ao carregar o arquivo.";
@@ -188,30 +210,38 @@
     });
   }
 
-  function startRollout() {
-    const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
-    const panel = document.getElementById('right-panel');
+  function startRollout(resetToTop = false) {
+  const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
+  const panel = document.getElementById('right-panel');
+
+  if (resetToTop) {
     panel.scrollTop = 0;
     document.getElementById('txtViewer').scrollTop = 0;
-    scrollHeight = panel.scrollHeight - panel.clientHeight;
-    step = scrollHeight / (seconds / 100);
-    scrolled = 0;
-    isPaused = false;
-    rolloutInterval = setInterval(() => {
-      if (scrolled >= scrollHeight || isPaused) {
-        clearInterval(rolloutInterval);
-      } else {
-        panel.scrollTop += step;
-        scrolled += step;
-      }
-    }, 100);
   }
+
+  scrollHeight = panel.scrollHeight - panel.clientHeight;
+  step = scrollHeight / (seconds / 100);
+  scrolled = panel.scrollTop;
+  isPaused = false;
+
+  clearInterval(rolloutInterval);
+
+  rolloutInterval = setInterval(() => {
+    if (scrolled >= scrollHeight || isPaused) {
+      clearInterval(rolloutInterval);
+    } else {
+      panel.scrollTop += step;
+      scrolled += step;
+    }
+  }, 100);
+}
 
   function pauseRollout() {
     isPaused = true;
   }
 
   function continueRollout() {
+  
     if (!isPaused) return;
     isPaused = false;
     const panel = document.getElementById('right-panel');
@@ -230,7 +260,40 @@
     isPaused = false;
   }
 
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      console.log("txtViewer visível - iniciando scroll");
+      startRollout();
+    } else {
+      console.log("txtViewer fora de vista - parando scroll");
+      stopRollout();
+    }
+  });
+}, {
+  root: document.getElementById('right-panel'),
+  threshold: 0.5 // Ajuste a sensibilidade da visibilidade
+});
 
+// Começa a observar quando o DOM estiver pronto
+window.addEventListener('DOMContentLoaded', () => {
+  const target = document.getElementById('txtViewer');
+  if (target) observer.observe(target);
+});
+
+function adjustRolloutTime(delta) {
+  const input = document.getElementById('rollout-time');
+  let current = parseInt(input.value) || 0;
+  current += delta;
+  if (current < 5) current = 5; // tempo mínimo de rolagem
+  input.value = current;
+
+  // Se já estiver rolando, reinicia com o novo tempo
+  if (rolloutInterval && !isPaused) {
+    stopRollout();
+    startRollout();
+  }
+}
  
 </script>
 
