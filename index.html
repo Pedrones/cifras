@@ -317,45 +317,52 @@ async function uploadToGitHub() {
     const token = prompt("Informe seu token de acesso pessoal do GitHub:");
     if (!token) {
         alert("Token não informado.");
-//        return;
-    }
-
-    const fileInput = document.getElementById('uploadFileGitHub');
-    fileInput.click();	
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Nenhum arquivo selecionado.");
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const content = e.target.result;
-        const base64Content = btoa(unescape(encodeURIComponent(content)));
+    const fileInput = document.getElementById('uploadFileGitHub');
 
-        const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/cifras/${file.name}`;
-
-        const response = await fetch(url, {
-            method: "PUT",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Upload via página web",
-                content: base64Content
-            })
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Arquivo salvo com sucesso!");
-        } else {
-            alert("Erro: " + result.message);
+    // Define o que fazer quando o usuário escolher o arquivo
+    fileInput.onchange = function () {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Nenhum arquivo selecionado.");
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const content = e.target.result;
+            const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+            const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${pasta}/${file.name}`;
+
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: "Upload via página web",
+                    content: base64Content
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert("Arquivo salvo com sucesso!");
+            } else {
+                alert("Erro: " + result.message);
+            }
+        };
+        reader.readAsText(file);
     };
-    reader.readAsText(file);
+
+    // Abre o seletor de arquivos
+    fileInput.click();
 }
+
 
 	
 </script>
