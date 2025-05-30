@@ -336,7 +336,9 @@ async function uploadToGitHub() {
             const content = e.target.result;
             const base64Content = btoa(unescape(encodeURIComponent(content)));
 
-            const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${pasta}/${file.name}`;
+            // const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${pasta}/${file.name}`;
+
+	     const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${file.name}`;
 
             const response = await fetch(url, {
                 method: "PUT",
