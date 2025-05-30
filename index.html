@@ -2,503 +2,535 @@
 <!DOCTYPE html>
 
 <html lang="pt-br">
-<head>
-<meta charset="utf-8"/>
-<title>Visualizador de Cifras</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>	
-<style>
-    body, html {
-      height: 100%;
-    }
-    #left-panel {
-      height: 100vh;
-      overflow-y: auto;
-      border-right: 1px solid #ccc;
-    }
-    #right-panel {
-      height: 100vh;
-      overflow-y: auto;
-      padding: 20px;
-      position: relative;
-    }
-    .song-div {
-      display: block;
-    }
-    .song-div.active {
-      display: block;
-    }
-    #pdfViewer {
-      width: 100%;
-      height: 80vh;
-      border: none;
-    }
-		
-	.list-group-item:hover {
-	  cursor: pointer !important;
-	}
-
-	#divRolagem {
-	  position: sticky;
-	  top: 0;
-	  background-color: white;
-	  z-index: 1000;
-	  xxpadding: 10px 20px;
-	}
-  </style>
-</head>
-<body>
-
-<div class="container-fluid">
-	<div class="row">
-	<!-- Painel Esquerdo -->
-	<div class="col-md-3 p-3" id="left-panel">
-
-		<div style="display:none">
-		  <!-- Abas -->
-		  <ul class="nav nav-tabs" id="abasExemplo" role="tablist">
-			<li class="nav-item" role="presentation">
-			  <button class="nav-link active" id="arqLoc-tab" data-bs-toggle="tab" data-bs-target="#arqLoc" type="button" role="tab" aria-controls="arqLoc" aria-selected="true">Local</button>
-			</li>
-			<li class="nav-item" role="presentation">
-			  <button class="nav-link" id="arqGdr-tab" data-bs-toggle="tab" data-bs-target="#arqGdr" type="button" role="tab" aria-controls="arqGdr" aria-selected="false">Google Drive</button>
-			</li>
-		  </ul>
-
-		  <!-- Conteúdo das Abas -->
-
-		  <div class="tab-content p-3 border border-top-0" id="abasExemploConteudo">
-			<div class="tab-pane fade show active" id="arqLoc" role="tabpanel" aria-labelledby="arqLoc-tab">
-				<br>
-				<input accept=".txt,.pdf,.doc*,.html,.rtf" class="form-control" directory="True" id="folderInput" multiple="True" type="file" webkitdirectory="True"/>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Visualizador de Cifras</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>	
+		<style>
+			body, html {
+			height: 100%;
+			}
+			#left-panel {
+			height: 100vh;
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			}
+			#right-panel {
+			height: 100vh;
+			overflow-y: auto;
+			padding: 20px;
+			position: relative;
+			}
+			.song-div {
+			display: block;
+			}
+			.song-div.active {
+			display: block;
+			}
+			#pdfViewer {
+			width: 100%;
+			height: 80vh;
+			border: none;
+			}
 			
-			</div>
-			<div class="tab-pane fade" id="arqGdr" role="tabpanel" aria-labelledby="arqGdr-tab">
-				<br>	
-				<input class="form-control" id="cloud-link" placeholder="https://drive.google.com/..." type="url"/>
-				<input class="form-control mb-3" id="api-key" placeholder="Cole sua chave de API aqui" type="text"/>
-				<button class="btn btn-outline-secondary w-100 mb-3" onclick="loadDriveFiles()">Carregar Arquivos do Drive</button>
-			</div>
-		  </div>
-		</div>
-
-
-		  <!-- Filtros -->
-
-		  <!-- Lista de musicas -->
-		<input class="form-control mb-3" id="search-filter" placeholder="Buscar música..." type="text"/>
-		<ul class="list-group" id="songList" style="font-size: 12px;">
-
-		</ul>
-
-	</div>
-
-	<!-- Painel Direito -->
-	
-
-	
-	
-	<div class="col-md-9" id="right-panel">
-	
-	
-		  <!-- Rolagem de telas -->
-		<div class="d-flex justify-content-end flex-wrap gap-2" id="divRolagem">
-			<div class="input-group mb-3" id="divTempo" style="display:none;">
-				<input class="form-control" style="font-size: smaller;" id="wait-time" min="0" title="Espera para scroll" type="number" value="5"/>
-				<input class="form-control" style="font-size: smaller;" id="rollout-time" min="0" title="Scroll em segundos" type="number" value="90"/>
-				<input class="form-control" style="font-size: smaller;" id="uploadFileGitHub" title="Arquivo para upload" type="file"/>
-			</div>
+			.list-group-item:hover {
+			  cursor: pointer !important;
+			}
+			
+			#divRolagem {
+			position: sticky;
+			top: 0;
+			background-color: white;
+			z-index: 1000;
+			xxpadding: 10px 20px;
+			}
+		</style>
+	</head>
+	<body>
 		
-		  <div id="divControle" class="d-flex gap-1">
-			<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
-			<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
-			<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
-			<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
-			<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
-			<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
-			<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><i class="bi bi-zoom-out"></i></button>
-			<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><i class="bi bi-zoom-in"></i></button>
-			<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
-		  </div>
-		</div>	
-	
-		<!-- Conteudo do arquivo -->
-		<div class="song-div" id="file-content">
-			<!-- Divisões por tipo de arquivo  -->
-			<div    id="txtViewer" style="font-family: monospace"></div> 
+		<div class="container-fluid">
+			<div class="row">
+				<!-- Painel Esquerdo -->
+				<div class="col-md-3 p-3" id="left-panel">
+					
+					<div style="display:none">
+						<!-- Abas -->
+						<ul class="nav nav-tabs" id="abasExemplo" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button class="nav-link active" id="arqLoc-tab" data-bs-toggle="tab" data-bs-target="#arqLoc" type="button" role="tab" aria-controls="arqLoc" aria-selected="true">Local</button>
+							</li>
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="arqGdr-tab" data-bs-toggle="tab" data-bs-target="#arqGdr" type="button" role="tab" aria-controls="arqGdr" aria-selected="false">Google Drive</button>
+							</li>
+						</ul>
+						
+						<!-- Conteúdo das Abas -->
+						
+						<div class="tab-content p-3 border border-top-0" id="abasExemploConteudo">
+							<div class="tab-pane fade show active" id="arqLoc" role="tabpanel" aria-labelledby="arqLoc-tab">
+								<br>
+								<input accept=".txt,.pdf,.doc*,.html,.rtf" class="form-control" directory="True" id="folderInput" multiple="True" type="file" webkitdirectory="True"/>
+								
+							</div>
+							<div class="tab-pane fade" id="arqGdr" role="tabpanel" aria-labelledby="arqGdr-tab">
+								<br>	
+								<input class="form-control" id="cloud-link" placeholder="https://drive.google.com/..." type="url"/>
+								<input class="form-control mb-3" id="api-key" placeholder="Cole sua chave de API aqui" type="text"/>
+								<button class="btn btn-outline-secondary w-100 mb-3" onclick="loadDriveFiles()">Carregar Arquivos do Drive</button>
+							</div>
+						</div>
+					</div>
+					
+					
+					<!-- Filtros -->
+					
+					<!-- Lista de musicas -->
+					<input class="form-control mb-3" id="search-filter" placeholder="Buscar música..." type="text"/>
+					<ul class="list-group" id="songList" style="font-size: 12px;">
+						
+					</ul>
+					
+				</div>
+				
+				<!-- Painel Direito -->
+				
+				
+				
+				
+				<div class="col-md-9" id="right-panel">
+					
+					
+					<!-- Rolagem de telas -->
+					<div class="d-flex justify-content-end flex-wrap gap-2" id="divRolagem">
+						<div class="input-group mb-3" id="divTempo" style="display:none;">
+							<input class="form-control" style="font-size: smaller;" id="wait-time" min="0" title="Espera para scroll" type="number" value="5"/>
+							<input class="form-control" style="font-size: smaller;" id="rollout-time" min="0" title="Scroll em segundos" type="number" value="90"/>
+							<input class="form-control" style="font-size: smaller;" id="uploadFileGitHub" title="Arquivo para upload" type="file"/>
+						</div>
+						
+						<div id="divControle" class="d-flex gap-1">
+							<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
+							<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+							<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><i class="bi bi-zoom-out"></i></button>
+							<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><i class="bi bi-zoom-in"></i></button>
+							<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
+							<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
+						</div>
+					</div>	
+					
+					<!-- Conteudo do arquivo -->
+					<div class="song-div" id="file-content">
+						<!-- Divisões por tipo de arquivo  -->
+						<div    id="txtViewer" style="font-family: monospace"></div> 
+					</div>
+				</div>
 			</div>
 		</div>
-	</div>
-</div>
-
-  <script>
-    const usuario = "pedrones";
-    const repositorio = "cifras";
-    const pasta = "cifras";
-
-    fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
-      .then(response => response.json())
-      .then(files => {
-        const songList = document.getElementById('songList');
-        const txtViewer = document.getElementById('txtViewer');
-        files.forEach(file => {
-          if (file.name.endsWith('.txt')) {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = file.name;
-            li.style.cursor = 'pointer';
-            li.onclick = () => {
-              fetch(file.download_url)
-                .then(res => res.text())
-                .then(texto => {
-					stopRollout();
-					const linhas = texto.split('\n');
-					const htmlFormatado = linhas.map((linha, index) => {
-					  const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-					  const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
-					  const linhaTrim = linha.trim();
-
-					  if (index === 0) {
-						return `<h5>${linhaComEspacos}</h5>`;
-					  } else if (linhaTrim.length < 6 || / {3,}/.test(linha)) {
-						return `<strong style="color:red">${linhaComEspacos}</strong>`;
-					  } else {
-						return linhaComEspacos;
-					  }
-					}).join('<br>');
-					txtViewer.innerHTML = htmlFormatado;
-					txtViewer.scrollTop = 0;
-					document.getElementById('right-panel').scrollTop = 0;
-					/*
-					setTimeout(() => {
-					  startRollout();
-					}, 5000); 
-					*/
-                })
-                .catch(err => {
-                  txtViewer.textContent = "Erro ao carregar o arquivo.";
-                  console.error(err);
-                });
-            };
-            songList.appendChild(li);
-          }
-        });
-      })
-      .catch(error => {
-        console.error("Erro ao acessar a API do GitHub:", error);
-        document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
-      });
-  </script>
-
-
-
+		
+		<!-- Modal para exibir mapeamento de comandos -->
+		<div class="modal fade" id="voiceCommandModal" tabindex="-1" aria-labelledby="voiceCommandModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="voiceCommandModalLabel">Comandos de Voz Disponíveis</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<table class="table table-bordered">
+							<thead>
+								<tr><th>Diga</th><th>Para</th></tr>
+							</thead>
+							<tbody>
+								<tr><td>Cifra iniciar</td><td>Iniciar a rolagem</td></tr>
+								<tr><td>Cifra pausar</td><td>Pausar a rolagem</td></tr>
+								<tr><td>Cifra continuar</td><td>Continuar a rolagem</td>
+								</tr><tr><td>Cifra parar</td><td>Parar a rolagem</td></tr>
+								<tr><td>Cifra devagar</td><td>Deixar a rolagem mais lenta</td></tr>
+								<tr><td>Cifra rápido</td><td>Deixar a rolagem mais rápida</td></tr>
+								<tr><td>Cifra menor</td><td>Diminuir o tamanho da fonte</td></tr>
+								<tr><td>Cifra maior</td><td>Aumentar o tamanho da fonte</td></tr>
+								<tr><td>Cifra tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
+							</tbody>
+						</table>
+						
+						<ul id="voiceCommandList"></ul>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 <script>
-  let rolloutInterval;
-  let isPaused = false;
-  let scrolled = 0;
-  let scrollHeight;
-  let step;
-
-  function showSong(id) {
-    document.querySelectorAll('.song-div').forEach(div => div.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  document.getElementById('search-filter').addEventListener('input', filterSongs);
-
-  function filterSongs() {
-    const search = document.getElementById('search-filter').value.toLowerCase();
-    document.querySelectorAll('#songList li').forEach(item => {
-      const matchesSearch = !search || item.textContent.toLowerCase().includes(search);
-      item.style.display = matchesSearch ? '' : 'none';
-    });
-  }
-
-  function startRollout(resetToTop = false) {
-  const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
-  const panel = document.getElementById('right-panel');
-
-  if (resetToTop) {
-    panel.scrollTop = 0;
-    document.getElementById('txtViewer').scrollTop = 0;
-  }
-
-  scrollHeight = panel.scrollHeight - panel.clientHeight;
-  step = scrollHeight / (seconds / 100);
-  scrolled = panel.scrollTop;
-  isPaused = false;
-
-  clearInterval(rolloutInterval);
-
-  rolloutInterval = setInterval(() => {
-    if (scrolled >= scrollHeight || isPaused) {
-      clearInterval(rolloutInterval);
-    } else {
-      panel.scrollTop += step;
-      scrolled += step;
-    }
-  }, 100);
-}
-
-  function pauseRollout() {
-    isPaused = true;
-  }
-
-  function continueRollout() {
-  
-    if (!isPaused) return;
-    isPaused = false;
-    const panel = document.getElementById('right-panel');
-    rolloutInterval = setInterval(() => {
-      if (scrolled >= scrollHeight || isPaused) {
-        clearInterval(rolloutInterval);
-      } else {
-        panel.scrollTop += step;
-        scrolled += step;
-      }
-    }, 100);
-  }
-
-  function stopRollout() {
-    clearInterval(rolloutInterval);
-    isPaused = false;
-  }
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      console.log("txtViewer visível - iniciando scroll");
-      startRollout();
-    } else {
-      console.log("txtViewer fora de vista - parando scroll");
-      stopRollout();
-    }
-  });
-}, {
-  root: document.getElementById('right-panel'),
-  threshold: 0.5 // Ajuste a sensibilidade da visibilidade
-});
-
-// Começa a observar quando o DOM estiver pronto
-window.addEventListener('DOMContentLoaded', () => {
-  const target = document.getElementById('txtViewer');
-  if (target) observer.observe(target);
-});
-
-function adjustRolloutTime(delta) {
-  const input = document.getElementById('rollout-time');
-  let current = parseInt(input.value) || 0;
-  current += delta;
-  if (current < 5) current = 5; // tempo mínimo de rolagem
-  input.value = current;
-
-  // Se já estiver rolando, reinicia com o novo tempo
-  if (rolloutInterval && !isPaused) {
-    stopRollout();
-    startRollout();
-  }
-}
-
-
-// Função para alterar o tamanho da fonte
-function changeFontSize(increase = true) {
-    const viewer = document.getElementById('txtViewer');
-    if (!viewer) return;
-
-    const style = window.getComputedStyle(viewer, null).getPropertyValue('font-size');
-    const currentSize = parseFloat(style);
-    const newSize = increase ? currentSize + 2 : currentSize - 2;
-
-    viewer.style.fontSize = `${newSize}px`;
-}
-
-
-async function uploadToGitHub() {
-
-	const token = prompt("Informe seu token de acesso pessoal do GitHub:");
-    if (!token) {
-        alert("Token não informado.");
-          return;
-    }
-
-    const fileInput = document.getElementById('uploadFileGitHub');
-
-    // Define o que fazer quando o usuário escolher o arquivo
-    fileInput.onchange = function () {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert("Nenhum arquivo selecionado.");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-            const content = e.target.result;
-            const base64Content = btoa(unescape(encodeURIComponent(content)));
-
-            // const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${pasta}/${file.name}`;
-
-	     const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${file.name}`;
-
-            const response = await fetch(url, {
-                method: "PUT",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: "Upload via página web",
-                    content: base64Content
-                })
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                alert("Arquivo salvo com sucesso!");
-            } else {
-                alert("Erro: " + result.message);
-            }
-        };
-        reader.readAsText(file);
-    };
-
-    // Abre o seletor de arquivos
-    fileInput.click();
-}
-
-
+	const usuario = "pedrones";
+	const repositorio = "cifras";
+	const pasta = "cifras";
+	
+	fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
+	.then(response => response.json())
+	.then(files => {
+		const songList = document.getElementById('songList');
+		const txtViewer = document.getElementById('txtViewer');
+		files.forEach(file => {
+			if (file.name.endsWith('.txt')) {
+				const li = document.createElement('li');
+				li.className = 'list-group-item';
+				li.textContent = file.name;
+				li.style.cursor = 'pointer';
+				li.onclick = () => {
+					fetch(file.download_url)
+					.then(res => res.text())
+					.then(texto => {
+						stopRollout();
+						const linhas = texto.split('\n');
+						const htmlFormatado = linhas.map((linha, index) => {
+							const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+							const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
+							const linhaTrim = linha.trim();
+							
+							if (index === 0) {
+								return `<h5>${linhaComEspacos}</h5>`;
+								} else if (linhaTrim.length < 6 || / {3,}/.test(linha)) {
+								return `<strong style="color:red">${linhaComEspacos}</strong>`;
+								} else {
+								return linhaComEspacos;
+							}
+						}).join('<br>');
+						txtViewer.innerHTML = htmlFormatado;
+						txtViewer.scrollTop = 0;
+						document.getElementById('right-panel').scrollTop = 0;
+						/*
+							setTimeout(() => {
+							  startRollout();
+							}, 5000); 
+						*/
+					})
+					.catch(err => {
+						txtViewer.textContent = "Erro ao carregar o arquivo.";
+						console.error(err);
+					});
+				};
+				songList.appendChild(li);
+			}
+		});
+	})
+	.catch(error => {
+		console.error("Erro ao acessar a API do GitHub:", error);
+		document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
+	});
+	
+	
+	let rolloutInterval;
+	let isPaused = false;
+	let scrolled = 0;
+	let scrollHeight;
+	let step;
+	
+	// **********************************************
+	// Começa a observar quando o DOM estiver pronto
+	// **********************************************
+	function showSong(id) {
+		document.querySelectorAll('.song-div').forEach(div => div.classList.remove('active'));
+		document.getElementById(id).classList.add('active');
+	}
+	
+	document.getElementById('search-filter').addEventListener('input', filterSongs);
+	
+	// **********************************************
+	// Filtra musica pelo nome
+	// **********************************************
+	function filterSongs() {
+		const search = document.getElementById('search-filter').value.toLowerCase();
+		document.querySelectorAll('#songList li').forEach(item => {
+			const matchesSearch = !search || item.textContent.toLowerCase().includes(search);
+			item.style.display = matchesSearch ? '' : 'none';
+		});
+	}
+	
+	// **********************************************
+	//	Inicia o rollout 
+	// **********************************************
+	function startRollout(resetToTop = false) {
+		const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;
+		const panel = document.getElementById('right-panel');
+		
+		if (resetToTop) {
+			panel.scrollTop = 0;
+			document.getElementById('txtViewer').scrollTop = 0;
+		}
+		
+		scrollHeight = panel.scrollHeight - panel.clientHeight;
+		step = scrollHeight / (seconds / 100);
+		scrolled = panel.scrollTop;
+		isPaused = false;
+		
+		clearInterval(rolloutInterval);
+		
+		rolloutInterval = setInterval(() => {
+			if (scrolled >= scrollHeight || isPaused) {
+				clearInterval(rolloutInterval);
+				} else {
+				panel.scrollTop += step;
+				scrolled += step;
+			}
+		}, 100);
+	}
+	
+	// **********************************************
+	// Pausa o rollout
+	// **********************************************
+	function pauseRollout() {
+		isPaused = true;
+	}
+	
+	// **********************************************
+	// Continua o rollout
+	// **********************************************
+	function continueRollout() {
+		
+		if (!isPaused) return;
+		isPaused = false;
+		const panel = document.getElementById('right-panel');
+		rolloutInterval = setInterval(() => {
+			if (scrolled >= scrollHeight || isPaused) {
+				clearInterval(rolloutInterval);
+				} else {
+				panel.scrollTop += step;
+				scrolled += step;
+			}
+		}, 100);
+	}
+	
+	// **********************************************
+	// Para o rollout
+	// **********************************************
+	function stopRollout() {
+		clearInterval(rolloutInterval);
+		isPaused = false;
+	}
+	
+	
+	// **********************************************
+	// Controlador do scroll  
+	// **********************************************
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				console.log("txtViewer visível - iniciando scroll");
+				startRollout();
+				} else {
+				console.log("txtViewer fora de vista - parando scroll");
+				stopRollout();
+			}
+		});
+		}, {
+		root: document.getElementById('right-panel'),
+		threshold: 0.5 // Ajuste a sensibilidade da visibilidade
+	});
+	
+	// **********************************************
+	// Começa a observar quando o DOM estiver pronto
+	// **********************************************
+	window.addEventListener('DOMContentLoaded', () => {
+		const target = document.getElementById('txtViewer');
+		if (target) observer.observe(target);
+	});
+	
+	// **********************************************
+	// Controla o tempo de rolagem
+	// **********************************************
+	function adjustRolloutTime(delta) {
+		const input = document.getElementById('rollout-time');
+		let current = parseInt(input.value) || 0;
+		current += delta;
+		if (current < 5) current = 5; // tempo mínimo de rolagem
+		input.value = current;
+		
+		// Se já estiver rolando, reinicia com o novo tempo
+		if (rolloutInterval && !isPaused) {
+			stopRollout();
+			startRollout();
+		}
+	}
+	
+	
+	// **********************************************
+	// Controla o tamanho da fonte
+	// **********************************************
+	function changeFontSize(increase = true) {
+		    const viewer = document.getElementById('txtViewer');
+		    if (!viewer) return;
+		
+		    const style = window.getComputedStyle(viewer, null).getPropertyValue('font-size');
+		    const currentSize = parseFloat(style);
+		    const newSize = increase ? currentSize + 2 : currentSize - 2;
+		
+		    viewer.style.fontSize = `${newSize}px`;
+	}
+	
+	
+	// **********************************************
+	// Upload de arquivo
+	// **********************************************
+	async function uploadToGitHub() {
+		
+		const token = prompt("Informe seu token de acesso pessoal do GitHub:");
+		if (!token) {
+			alert("Token não informado.");
+			return;
+		}
+		
+		const fileInput = document.getElementById('uploadFileGitHub');
+		
+		// Define o que fazer quando o usuário escolher o arquivo
+		fileInput.onchange = function () {
+			const file = fileInput.files[0];
+			if (!file) {
+				alert("Nenhum arquivo selecionado.");
+				return;
+			}
+			
+			const reader = new FileReader();
+			reader.onload = async function (e) {
+				const content = e.target.result;
+				const base64Content = btoa(unescape(encodeURIComponent(content)));
+				const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${file.name}`;
+				const response = await fetch(url, {
+					method: "PUT",
+					headers: {
+						"Authorization": "Bearer " + token,
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						message: "Upload via página web",
+						content: base64Content
+					})
+				});
+				
+				const result = await response.json();
+				if (response.ok) {
+					alert("Arquivo salvo com sucesso!");
+					} else {
+					alert("Erro: " + result.message);
+				}
+			};
+			reader.readAsText(file);
+		};
+		
+		// Abre o seletor de arquivos
+		fileInput.click();
+	}
+	
+	
+	let recognition;
+	let recognizing = false;
+	
+	// **********************************************
+	// Habilita ou desabilita o comando de voz
+	// **********************************************
+	function toggleVoiceControl() {
+		if (!recognition) {
+			const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+			recognition = new SpeechRecognition();
+			recognition.lang = 'pt-BR';
+			recognition.continuous = true;
+			recognition.interimResults = false;
+			
+			recognition.onresult = function(event) {
+				for (let i = event.resultIndex; i < event.results.length; ++i) {
+					if (event.results[i].isFinal) {
+						const command = event.results[i][0].transcript.trim().toLowerCase();
+						processVoiceCommand(command);
+					}
+				}
+			};
+			
+			recognition.onerror = function(event) {
+				console.error('Erro no reconhecimento de voz:', event.error);
+			};
+		}
+		
+		if (recognizing) {
+			recognition.stop();
+			recognizing = false;
+			document.getElementById('btnVoice').classList.remove('btn-success');
+			document.getElementById('btnVoice').classList.add('btn-outline-secondary');
+			} else {
+			recognition.start();
+			recognizing = true;
+			document.getElementById('btnVoice').classList.remove('btn-outline-secondary');
+			document.getElementById('btnVoice').classList.add('btn-success');
+			showVoiceCommandModal();
+		}
+	}
+	
+	// **********************************************
+	// Executa o comando de voz
+	// **********************************************
+	function processVoiceCommand(command) {
+		const map = {
+			'cifra iniciar': 'btnIniciar',
+			'cifra pausar': 'btnPausar',
+			'cifra continuar': 'btnContinuar',
+			'cifra parar': 'btnParar',
+			'cifra devagar': 'btnDevagar',
+			'cifra rápido': 'btnRapido',
+			'cifra rapido': 'btnRapido',
+			'cifra menor': 'btnMenor',
+			'cifra maior': 'btnMaior'
+		};
+		
+		for (const key in map) {
+			if (command === key) {
+				document.getElementById(map[key]).click();
+				return;
+			}
+		}
+		
+		if (command.startsWith('cifra tocar')) {
+			const songName = command.replace('cifra tocar', '').trim();
+			const items = document.querySelectorAll('#songList li');
+			for (const item of items) {
+				if (item.textContent.toLowerCase().includes(songName)) {
+					item.click();
+					setTimeout(() => document.getElementById('btnIniciar').click(), 3000);
+					break;
+				}
+			}
+		}
+	}
+	
+	// **********************************************
+	// Abre a janela modal de comandos de voz 
+	// **********************************************
+	function showVoiceCommandModal() {
+		const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+		modal.show();
+	}
+	
+	
+	// **********************************************
+	// Esconde o controle de voz se browser incompativel
+	// **********************************************
+	window.addEventListener('DOMContentLoaded', () => {
+		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		if (!SpeechRecognition) {
+			const btnVoice = document.getElementById('btnVoice');
+			if (btnVoice) {
+				btnVoice.style.display = 'none';
+			}
+		}
+	});
+	
 	
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>		
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-<!-- Modal para exibir mapeamento de comandos -->
-<div class="modal fade" id="voiceCommandModal" tabindex="-1" aria-labelledby="voiceCommandModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="voiceCommandModalLabel">Comandos de Voz Disponíveis</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <ul id="voiceCommandList"></ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  let recognition;
-  let recognizing = false;
-
-  function toggleVoiceControl() {
-    if (!recognition) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.continuous = true;
-      recognition.interimResults = false;
-
-      recognition.onresult = function(event) {
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            const command = event.results[i][0].transcript.trim().toLowerCase();
-            processVoiceCommand(command);
-          }
-        }
-      };
-
-      recognition.onerror = function(event) {
-        console.error('Erro no reconhecimento de voz:', event.error);
-      };
-    }
-
-    if (recognizing) {
-      recognition.stop();
-      recognizing = false;
-      document.getElementById('btnVoice').classList.remove('btn-success');
-      document.getElementById('btnVoice').classList.add('btn-outline-secondary');
-    } else {
-      recognition.start();
-      recognizing = true;
-      document.getElementById('btnVoice').classList.remove('btn-outline-secondary');
-      document.getElementById('btnVoice').classList.add('btn-success');
-      showVoiceCommandModal();
-    }
-  }
-
-  function processVoiceCommand(command) {
-    const map = {
-      'cifra iniciar': 'btnIniciar',
-      'cifra pausar': 'btnPausar',
-      'cifra continuar': 'btnContinuar',
-      'cifra parar': 'btnParar',
-      'cifra devagar': 'btnDevagar',
-      'cifra rápido': 'btnRapido',
-      'cifra rapido': 'btnRapido',
-      'cifra menor': 'btnMenor',
-      'cifra maior': 'btnMaior'
-    };
-
-    for (const key in map) {
-      if (command === key) {
-        document.getElementById(map[key]).click();
-        return;
-      }
-    }
-
-    if (command.startsWith('cifra tocar')) {
-      const songName = command.replace('cifra tocar', '').trim();
-      const items = document.querySelectorAll('#songList li');
-      for (const item of items) {
-        if (item.textContent.toLowerCase().includes(songName)) {
-          item.click();
-          setTimeout(() => document.getElementById('btnIniciar').click(), 3000);
-          break;
-        }
-      }
-    }
-  }
-
-  function showVoiceCommandModal() {
-    const map = {
-      'Cifra iniciar': 'Inicia a rolagem',
-      'Cifra pausar': 'Pausa a rolagem',
-      'Cifra continuar': 'Continua a rolagem',
-      'Cifra parar': 'Para a rolagem',
-      'Cifra devagar': 'Deixa a rolagem mais lenta',
-      'Cifra rápido': 'Deixa a rolagem mais rápida',
-      'Cifra menor': 'Diminui a fonte',
-      'Cifra maior': 'Aumenta fonte',
-	  'Cifra tocar xyz': 'Busca e começa a rolagem da música xyz'  
-    };
-
-    const list = document.getElementById('voiceCommandList');
-    list.innerHTML = '';
-    for (const key in map) {
-      const li = document.createElement('li');
-      li.textContent = `${key} -> ${map[key]}`;
-      list.appendChild(li);
-    }
-
-    const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
-    modal.show();
-  }
-
-  // Adiciona o botão na interface
-  window.addEventListener('DOMContentLoaded', () => {
-    const btn = document.createElement('button');
-    btn.id = 'btnVoice';
-    btn.className = 'btn btn-outline-secondary';
-    btn.title = 'Ativar/desativar comando por voz';
-    btn.innerHTML = '<i class="bi bi-mic-fill"></i>';
-    btn.onclick = toggleVoiceControl;
-    document.getElementById('divControle').appendChild(btn);
-  });
-</script>
 </body>
 </html>
