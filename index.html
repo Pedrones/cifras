@@ -160,6 +160,14 @@
 						
 						<ul id="voiceCommandList"></ul>
 					</div>
+
+					<div class="form-check mt-3">
+					  <input class="form-check-input" type="checkbox" value="" id="naoMostrarNovamente">
+					  <label class="form-check-label" for="naoMostrarNovamente">
+					    Não mostrar novamente
+					  </label>
+					</div>
+					
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
 					</div>
@@ -454,6 +462,12 @@
 			recognition.onerror = function(event) {
 				console.error('Erro no reconhecimento de voz:', event.error);
 			};
+
+			recognition.onend = function() {
+			    if (recognizing) {
+			        recognition.start(); // Reinicia automaticamente
+			    }
+			};
 		}
 		
 		if (recognizing) {
@@ -509,9 +523,19 @@
 	// **********************************************
 	// Abre a janela modal de comandos de voz 
 	// **********************************************
+
 	function showVoiceCommandModal() {
-		const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
-		modal.show();
+	  if (localStorage.getItem('naoMostrarComandos') === 'true') return;
+	
+	  const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+	  modal.show();
+	
+	  const checkbox = document.getElementById('naoMostrarNovamente');
+	  checkbox.checked = false;
+	
+	  checkbox.addEventListener('change', () => {
+	    localStorage.setItem('naoMostrarComandos', checkbox.checked);
+	  });
 	}
 	
 	
