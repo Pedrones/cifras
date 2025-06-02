@@ -161,14 +161,14 @@
 						<ul id="voiceCommandList"></ul>
 					</div>
 
-					<div class="form-check mt-3">
-					  <input class="form-check-input" type="checkbox" value="" id="naoMostrarNovamente">
-					  <label class="form-check-label" for="naoMostrarNovamente">
-					    Não mostrar novamente
-					  </label>
-					</div>
-					
 					<div class="modal-footer">
+						<div class="form-check mt-3">
+						  <input class="form-check-input" type="checkbox" value="" id="naoMostrarNovamente">
+						  <label class="form-check-label" for="naoMostrarNovamente">
+						    Não mostrar novamente
+						  </label>
+						</div>
+						
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
 					</div>
 				</div>
@@ -543,6 +543,9 @@
 	// Esconde o controle de voz se browser incompativel
 	// **********************************************
 	window.addEventListener('DOMContentLoaded', () => {
+		
+		localStorage.removeItem('naoMostrarComandos');
+
 		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 		if (!SpeechRecognition) {
 			const btnVoice = document.getElementById('btnVoice');
