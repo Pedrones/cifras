@@ -146,15 +146,15 @@
 								<tr><th>Diga</th><th>Para</th></tr>
 							</thead>
 							<tbody>
-								<tr><td>pedrones iniciar</td><td>Iniciar a rolagem</td></tr>
-								<tr><td>pedrones pausar</td><td>Pausar a rolagem</td></tr>
-								<tr><td>pedrones continuar</td><td>Continuar a rolagem</td>
-								</tr><tr><td>pedrones parar</td><td>Parar a rolagem</td></tr>
-								<tr><td>pedrones devagar</td><td>Deixar a rolagem mais lenta</td></tr>
-								<tr><td>pedrones rápido</td><td>Deixar a rolagem mais rápida</td></tr>
-								<tr><td>pedrones menor</td><td>Diminuir o tamanho da fonte</td></tr>
-								<tr><td>pedrones maior</td><td>Aumentar o tamanho da fonte</td></tr>
-								<tr><td>pedrones tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
+								<tr><td>cifra iniciar</td><td>Iniciar a rolagem</td></tr>
+								<tr><td>cifra pausar</td><td>Pausar a rolagem</td></tr>
+								<tr><td>cifra continuar</td><td>Continuar a rolagem</td>
+								</tr><tr><td>cifra parar</td><td>Parar a rolagem</td></tr>
+								<tr><td>cifra devagar</td><td>Deixar a rolagem mais lenta</td></tr>
+								<tr><td>cifra rápido</td><td>Deixar a rolagem mais rápida</td></tr>
+								<tr><td>cifra menor</td><td>Diminuir o tamanho da fonte</td></tr>
+								<tr><td>cifra maior</td><td>Aumentar o tamanho da fonte</td></tr>
+								<tr><td>cifra tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
 							</tbody>
 						</table>
 						
@@ -168,7 +168,7 @@
 		</div>
 		
 <script>
-	const usuario = "pedrones";
+	const usuario = "cifra";
 	const repositorio = "cifras";
 	const pasta = "cifras";
 	
@@ -475,15 +475,15 @@
 	// **********************************************
 	function processVoiceCommand(command) {
 		const map = {
-			'pedrones iniciar': 'btnIniciar',
-			'pedrones pausar': 'btnPausar',
-			'pedrones continuar': 'btnContinuar',
-			'pedrones parar': 'btnParar',
-			'pedrones devagar': 'btnDevagar',
-			'pedrones rápido': 'btnRapido',
-			'pedrones rapido': 'btnRapido',
-			'pedrones menor': 'btnMenor',
-			'pedrones maior': 'btnMaior'
+			'cifra iniciar': 'btnIniciar',
+			'cifra pausar': 'btnPausar',
+			'cifra continuar': 'btnContinuar',
+			'cifra parar': 'btnParar',
+			'cifra devagar': 'btnDevagar',
+			'cifra rápido': 'btnRapido',
+			'cifra rapido': 'btnRapido',
+			'cifra menor': 'btnMenor',
+			'cifra maior': 'btnMaior'
 		};
 		
 		for (const key in map) {
@@ -493,8 +493,8 @@
 			}
 		}
 		
-		if (command.startsWith('pedrones tocar')) {
-			const songName = command.replace('pedrones tocar', '').trim();
+		if (command.startsWith('cifra tocar')) {
+			const songName = command.replace('cifra tocar', '').trim();
 			const items = document.querySelectorAll('#songList li');
 			for (const item of items) {
 				if (item.textContent.toLowerCase().includes(songName)) {
