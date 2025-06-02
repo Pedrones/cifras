@@ -1,4 +1,6 @@
+
 <!DOCTYPE html>
+
 <html lang="pt-br">
 	<head>
 		<meta charset="utf-8"/>
@@ -144,15 +146,15 @@
 								<tr><th>Diga</th><th>Para</th></tr>
 							</thead>
 							<tbody>
-								<tr><td>Pedrão iniciar</td><td>Iniciar a rolagem</td></tr>
-								<tr><td>Pedrão pausar</td><td>Pausar a rolagem</td></tr>
-								<tr><td>Pedrão continuar</td><td>Continuar a rolagem</td>
-								</tr><tr><td>Pedrão parar</td><td>Parar a rolagem</td></tr>
-								<tr><td>Pedrão devagar</td><td>Deixar a rolagem mais lenta</td></tr>
-								<tr><td>Pedrão rápido</td><td>Deixar a rolagem mais rápida</td></tr>
-								<tr><td>Pedrão menor</td><td>Diminuir o tamanho da fonte</td></tr>
-								<tr><td>Pedrão maior</td><td>Aumentar o tamanho da fonte</td></tr>
-								<tr><td>Pedrão tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
+								<tr><td>pedrones iniciar</td><td>Iniciar a rolagem</td></tr>
+								<tr><td>pedrones pausar</td><td>Pausar a rolagem</td></tr>
+								<tr><td>pedrones continuar</td><td>Continuar a rolagem</td>
+								</tr><tr><td>pedrones parar</td><td>Parar a rolagem</td></tr>
+								<tr><td>pedrones devagar</td><td>Deixar a rolagem mais lenta</td></tr>
+								<tr><td>pedrones rápido</td><td>Deixar a rolagem mais rápida</td></tr>
+								<tr><td>pedrones menor</td><td>Diminuir o tamanho da fonte</td></tr>
+								<tr><td>pedrones maior</td><td>Aumentar o tamanho da fonte</td></tr>
+								<tr><td>pedrones tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
 							</tbody>
 						</table>
 						
@@ -473,15 +475,15 @@
 	// **********************************************
 	function processVoiceCommand(command) {
 		const map = {
-			'Pedrão iniciar': 'btnIniciar',
-			'Pedrão pausar': 'btnPausar',
-			'Pedrão continuar': 'btnContinuar',
-			'Pedrão parar': 'btnParar',
-			'Pedrão devagar': 'btnDevagar',
-			'Pedrão rápido': 'btnRapido',
-			'Pedrão rapido': 'btnRapido',
-			'Pedrão menor': 'btnMenor',
-			'Pedrão maior': 'btnMaior'
+			'pedrones iniciar': 'btnIniciar',
+			'pedrones pausar': 'btnPausar',
+			'pedrones continuar': 'btnContinuar',
+			'pedrones parar': 'btnParar',
+			'pedrones devagar': 'btnDevagar',
+			'pedrones rápido': 'btnRapido',
+			'pedrones rapido': 'btnRapido',
+			'pedrones menor': 'btnMenor',
+			'pedrones maior': 'btnMaior'
 		};
 		
 		for (const key in map) {
@@ -491,8 +493,8 @@
 			}
 		}
 		
-		if (command.startsWith('Pedrão tocar')) {
-			const songName = command.replace('Pedrão tocar', '').trim();
+		if (command.startsWith('pedrones tocar')) {
+			const songName = command.replace('pedrones tocar', '').trim();
 			const items = document.querySelectorAll('#songList li');
 			for (const item of items) {
 				if (item.textContent.toLowerCase().includes(songName)) {
