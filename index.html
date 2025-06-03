@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="pt-br">
@@ -145,17 +144,7 @@
 							<thead>
 								<tr><th>Diga</th><th>Para</th></tr>
 							</thead>
-							<tbody>
-								<tr><td>cifra iniciar</td><td>Iniciar a rolagem</td></tr>
-								<tr><td>cifra pausar</td><td>Pausar a rolagem</td></tr>
-								<tr><td>cifra continuar</td><td>Continuar a rolagem</td>
-								</tr><tr><td>cifra parar</td><td>Parar a rolagem</td></tr>
-								<tr><td>cifra devagar</td><td>Deixar a rolagem mais lenta</td></tr>
-								<tr><td>cifra rápido</td><td>Deixar a rolagem mais rápida</td></tr>
-								<tr><td>cifra menor</td><td>Diminuir o tamanho da fonte</td></tr>
-								<tr><td>cifra maior</td><td>Aumentar o tamanho da fonte</td></tr>
-								<tr><td>cifra tocar xyz</td><td>Buscar e começar a rolagem da música xyz</td></tr>
-							</tbody>
+							<tbody id="tabComandos"></tbody>
 						</table>
 						
 						<ul id="voiceCommandList"></ul>
@@ -179,7 +168,29 @@
 	const usuario = "pedrones";
 	const repositorio = "cifras";
 	const pasta = "cifras";
-	
+
+	const cmdVoz = "sargento";   
+
+	const comandos = [
+	  [`${cmdVoz} iniciar`, "Iniciar a rolagem", "btnIniciar"],
+	  [`${cmdVoz} pausar`, "Pausar a rolagem", "btnPausar"],
+	  [`${cmdVoz} continuar`, "Continuar a rolagem", "btnContinuar"],
+	  [`${cmdVoz} parar`, "Parar a rolagem", "btnParar"],
+	  [`${cmdVoz} devagar`, "Deixar a rolagem mais lenta", "btnDevagar"],
+	  [`${cmdVoz} rápido`, "Deixar a rolagem mais rápida", "btnRapido"],
+	  [`${cmdVoz} menor`, "Diminuir o tamanho da fonte", "btnMenor"],
+	  [`${cmdVoz} maior`, "Aumentar o tamanho da fonte", "btnMaior"],
+	  [`${cmdVoz} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""]
+	];
+
+    const tbody = document.getElementById("tabComandos");
+    comandos.forEach(([comando, descricao, botao]) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = 
+        `<td>${comando}</td><td>${descricao}</td>`;
+      tbody.appendChild(tr);
+    });
+
 	fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
 	.then(response => response.json())
 	.then(files => {
@@ -232,7 +243,6 @@
 		console.error("Erro ao acessar a API do GitHub:", error);
 		document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
 	});
-	
 	
 	let rolloutInterval;
 	let isPaused = false;
@@ -323,7 +333,6 @@
 		isPaused = false;
 	}
 	
-	
 	// **********************************************
 	// Controlador do scroll  
 	// **********************************************
@@ -367,7 +376,6 @@
 		}
 	}
 	
-	
 	// **********************************************
 	// Controla o tamanho da fonte
 	// **********************************************
@@ -381,7 +389,6 @@
 		
 		    viewer.style.fontSize = `${newSize}px`;
 	}
-	
 	
 	// **********************************************
 	// Upload de arquivo
@@ -435,7 +442,6 @@
 		fileInput.click();
 	}
 	
-	
 	let recognition;
 	let recognizing = false;
 	
@@ -488,27 +494,18 @@
 	// Executa o comando de voz
 	// **********************************************
 	function processVoiceCommand(command) {
-		const map = {
-			'cifra iniciar': 'btnIniciar',
-			'cifra pausar': 'btnPausar',
-			'cifra continuar': 'btnContinuar',
-			'cifra parar': 'btnParar',
-			'cifra devagar': 'btnDevagar',
-			'cifra rápido': 'btnRapido',
-			'cifra rapido': 'btnRapido',
-			'cifra menor': 'btnMenor',
-			'cifra maior': 'btnMaior'
-		};
-		
-		for (const key in map) {
-			if (command === key) {
-				document.getElementById(map[key]).click();
+
+	    comandos.forEach(([comando, descricao, botao]) => {
+
+			if (command === comando) {
+				document.getElementById(botao).click();
 				return;
 			}
-		}
+	    });
 		
-		if (command.startsWith('cifra tocar')) {
-			const songName = command.replace('cifra tocar', '').trim();
+	
+		if (command.startsWith(`${cmdVoz} tocar`)) {
+			const songName = command.replace(`${cmdVoz} tocar`, '').trim();
 			const items = document.querySelectorAll('#songList li');
 			for (const item of items) {
 				if (item.textContent.toLowerCase().includes(songName)) {
@@ -538,7 +535,6 @@
 	  });
 	}
 	
-	
 	// **********************************************
 	// Esconde o controle de voz se browser incompativel
 	// **********************************************
@@ -555,9 +551,7 @@
 		}
 	});
 	
-	
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>		
-
 </body>
 </html>
