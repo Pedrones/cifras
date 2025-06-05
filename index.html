@@ -7,62 +7,88 @@
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
 		<style>
-html, body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden; /* Impede rolagem global */
-}
-
-#left-panel {
-  height: calc(100vh - 60px);
-  overflow-y: auto;
-  border-right: 1px solid #ccc;
-  margin-top: 60px;
-}
-
-#right-panel {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding-top: 60px; /* altura da barra fixa */
-  overflow: hidden;
-}
-
-#divControle {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background-color: white;
-  z-index: 1050;
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  border-bottom: 1px solid #ccc;
-}
-
-#divRolagem {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-#txtViewer {
-  flex: 1;
-  overflow-y: auto;
-  font-family: monospace;
-  padding: 10px;
-}
-
+			html, body {
+			height: 100%;
+			margin: 0;
+			overflow: hidden; /* Impede rolagem global */
+			}
+			
+			#left-panel {
+			height: calc(100vh - 60px);
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			margin-top: 60px;
+			}
+			
+			#right-panel {
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			padding-top: 60px; /* altura da barra fixa */
+			overflow: hidden;
+			}
+			
+			#divControle {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			background-color: white;
+			z-index: 1050;
+			padding: 10px;
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 10px;
+			border-bottom: 1px solid #ccc;
+			}
+			
+			#divRolagem {
+			flex: 1;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			}
+			
+			#txtViewer {
+			flex: 1;
+			overflow-y: auto;
+			font-family: monospace;
+			padding: 10px;
+			}
+			
 			.list-group-item:hover {
 			  cursor: pointer !important;
 			}
-
-
-
+			
+			.corCifra {
+			color:red;
+			}
+			
+			body.dark-mode {
+			background-color: #121212;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode #divControle,
+			body.dark-mode .modal-content {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item:hover {
+			background-color: #2a2a2a;
+			}
+			
+			body.dark-mode .corCifra {
+			color: yellow;
+			}
+			
 		</style>
 	</head>
 	<body>
@@ -94,49 +120,34 @@ html, body {
 							</div>
 						</div>
 					</div>
-					<!-- Filtros -->
-					<!-- Lista de musicas -->
+					<!-- Filtro -->
 					<input class="form-control mb-3" id="search-filter" placeholder="Buscar música..." type="text"/>
+					<!-- Lista de musicas -->
 					<ul class="list-group" id="songList" style="font-size: 12px;">
 					</ul>
 				</div>
 				<!-- Painel Direito -->
-				
-				
-				
 				<div class="col-md-9" id="right-panel">
-
-						<div id="divControle" >
-							<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
-							<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90"/>
-							<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
-							<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
-							<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
-							<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
-							<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
-							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
-							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
-<!--
-							<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><i class="bi bi-zoom-out"></i>a</button>
-							<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><i class="bi bi-zoom-in"></i>A</button>
--->							
-							<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
-							<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
-							
-							<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
-							<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
-							<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
-						</div>
-
-
-<!-- Rolagem de telas -->
-
-
-
-
+					<!-- Botões de controle -->
+					<div id="divControle" >
+						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
+						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90"/>
+						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
+						<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
+						<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+						<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+						<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
+						<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
+						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
+						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
+					</div>
+					<!-- Rolagem de telas -->
 					<div id="divRolagem">
 						<!-- Conteudo do arquivo -->
-						<!-- Divisões por tipo de arquivo  -->
 						<div id="txtViewer" ></div>
 					</div>
 				</div>
@@ -200,6 +211,10 @@ html, body {
 									<input class="form-check-input" type="checkbox" id="showVoiceCommandModal" name="showVoiceCommandModal"/>
 									<label class="form-check-label" for="showVoiceCommandModal">Apresentar instruções ao ativar microfone</label>
 								</div>
+								<div class="form-check form-switch mb-3">
+									<input class="form-check-input" type="checkbox" id="darkModeToggle">
+									<label class="form-check-label" for="darkModeToggle">Modo Escuro</label>
+								</div>
 								
 							</form>
 						</div>
@@ -210,10 +225,6 @@ html, body {
 					</div>
 				</div>
 			</div>
-			
-			
-			
-			
 			
 			<script>
 				
@@ -260,13 +271,17 @@ html, body {
 										const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 										const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
 										const linhaTrim = linha.trim();
-										
+
+
+										// Verifica se há alguma palavra com mais de 5 letras
+										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
+
 										if (index === 0) {
 											return `<h5>${linhaComEspacos}</h5>`;
-											} else if (linhaTrim.length < 6 || / {3,}/.test(linha)) {
-											return `<strong style="color:red">${linhaComEspacos}</strong>`;
+											} else if ((linhaTrim.length < 6 || / {3,}/.test(linha)) && !hasLongWord) {
+												return `<strong class="corCifra">${linhaComEspacos}</strong>`;
 											} else {
-											return linhaComEspacos;
+												return linhaComEspacos;
 										}
 									}).join('<br>');
 									txtViewer.innerHTML = htmlFormatado;
@@ -310,7 +325,7 @@ html, body {
 					  [`${voiceCommandWord} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""]
 					];
 					
-				    const tbody = document.getElementById("tabComandos");
+					const tbody = document.getElementById("tabComandos");
 					tbody.innerHTML = "";
 				    comandos.forEach(([comando, descricao, botao]) => {
 					      const tr = document.createElement("tr");
@@ -318,8 +333,6 @@ html, body {
 					        `<td>${comando}</td><td>${descricao}</td>`;
 					      tbody.appendChild(tr);
 				    });
-				
-					
 				}
 				
 				// **********************************************
@@ -348,7 +361,6 @@ html, body {
 				// **********************************************
 				function startRollout(resetToTop = false) {
 					const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;     
-//					const panel = document.getElementById('right-panel');
 					const panel = document.getElementById('txtViewer');
 					
 					if (resetToTop) {
@@ -568,14 +580,13 @@ html, body {
 				// **********************************************
 				function processVoiceCommand(command) {
 					
-					    comandos.forEach(([comando, descricao, botao]) => {
-						
+				    comandos.forEach(([comando, descricao, botao]) => {
+					
 						if (command === comando) {
 							document.getElementById(botao).click();
 							return;
 						}
-					    });
-					
+				    });
 					
 					if (command.startsWith(`${voiceCommandWord} tocar`)) {
 						const songName = command.replace(`${voiceCommandWord} tocar`, '').trim();
@@ -597,16 +608,16 @@ html, body {
 				function abrirModalComandos() {
 					  if (localStorage.getItem('showVoiceCommandModal') === 'false') return;
 					
-						  loadComandos();
-						  const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
-						  modal.show();
-
-						  const checkbox = document.getElementById('naoMostrarNovamente');
-						  checkbox.checked = false;
-
-						  checkbox.addEventListener('change', () => {
+					loadComandos();
+					  const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+					  modal.show();
+					
+					  const checkbox = document.getElementById('naoMostrarNovamente');
+					  checkbox.checked = false;
+					
+					  checkbox.addEventListener('change', () => {
 						    localStorage.setItem('naoMostrarComandos', checkbox.checked);
-						});
+					});
 				}
 				
 				// **********************************************
@@ -625,10 +636,6 @@ html, body {
 					}
 				});
 				
-			</script>
-			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-			
-			<script>
 				document.addEventListener('DOMContentLoaded', function() {
 					// Carregar configurações do localStorage
 					autoStartTime = localStorage.getItem('autoStartTime') || 5;
@@ -652,7 +659,7 @@ html, body {
 						var modalInstance = bootstrap.Modal.getInstance(modalElement);
 						modalInstance.hide();
 						alert('Configurações salvas com sucesso!');
-											
+						
 					});
 					
 					// Aplicar configurações ao comportamento de rolagem e voz
@@ -678,30 +685,8 @@ html, body {
 						};
 					}
 				});
-			</script>
-			
-			
-			<script>
-			/*
-				document.getElementById('saveConfigButton').addEventListener('click', function() {
-					autoStartTime = document.getElementById('autoStartTime').value;
-					autoStartVoiceTime = document.getElementById('autoStartVoiceTime').value;
-					voiceCommandWord = document.getElementById('voiceCommandWord').value;
-					showVoiceCommandModal = document.getElementById('showVoiceCommandModal').checked;
-					
-					localStorage.setItem('autoStartTime', autoStartTime);
-					localStorage.setItem('autoStartVoiceTime', autoStartVoiceTime);
-					localStorage.setItem('voiceCommandWord', voiceCommandWord);
-					localStorage.setItem('showVoiceCommandModal', showVoiceCommandModal);
-					
-					loadComandos();
-					
-					alert('Configurações salvas com sucesso!');
-				});
-			*/	
+
 				window.addEventListener('load', function() {
-					
-					
 					if (autoStartTime) {
 						// Apply auto start time logic
 					}
@@ -718,6 +703,28 @@ html, body {
 						// Apply logic to show voiceCommandModal when microphone is activated
 					}
 				});
+
+				document.addEventListener('DOMContentLoaded', function () {
+					const darkModeToggle = document.getElementById('darkModeToggle');
+					const isDarkMode = localStorage.getItem('darkMode') === 'true';
+					
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						darkModeToggle.checked = true;
+					}
+					
+					darkModeToggle.addEventListener('change', function () {
+						if (this.checked) {
+							document.body.classList.add('dark-mode');
+							localStorage.setItem('darkMode', 'true');
+							} else {
+							document.body.classList.remove('dark-mode');
+							localStorage.setItem('darkMode', 'false');
+						}
+					});
+				});
 			</script>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+			
 		</body>
 	</html>
