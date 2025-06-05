@@ -93,17 +93,24 @@
 			    white-space: pre-wrap;
 			}
 			
+
 .selected-song {
-  background-color: #d1ecf1;
-  font-weight: bold;
-  border-left: 5px solid #0dcaf0;
+  background-color: #0dcaf0 !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  border-left: 5px solid #0a58ca !important;
+  box-shadow: 0 0 10px rgba(13, 202, 240, 0.6);
+  transition: all 0.3s ease;
 }
-		
+
 body.dark-mode .selected-song {
-  background-color: #1a3a40;
-  font-weight: bold;
-  border-left: 5px solid #0dcaf0;
+  background-color: #0dcaf0 !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  border-left: 5px solid #0a58ca !important;
+  box-shadow: 0 0 10px rgba(13, 202, 240, 0.8);
 }
+
 		
 		</style>
 	</head>
@@ -369,10 +376,19 @@ const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValid
 									document.getElementById('right-panel').scrollTop = 0;
 									
 									
-// Destaca o arquivo selecionado 
-document.querySelectorAll('#songList li').forEach(el => el.classList.remove('selected-song'));
-li.classList.add('selected-song');
-console.log(li)									
+
+
+
+
+// Remove marcador de todos os itens
+document.querySelectorAll('#songList li').forEach(el => {
+  el.innerHTML = el.textContent; // remove qualquer HTML anterior
+});
+
+// Adiciona marcador ao item clicado
+li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
+
+
 									/*
 										setTimeout(() => {
 										  startRollout();
