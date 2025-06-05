@@ -89,11 +89,22 @@
 			color: yellow;
 			}
 			
-			
 			#editArea {
 			    white-space: pre-wrap;
 			}
 			
+.selected-song {
+  background-color: #d1ecf1;
+  font-weight: bold;
+  border-left: 5px solid #0dcaf0;
+}
+		
+body.dark-mode .selected-song {
+  background-color: #1a3a40;
+  font-weight: bold;
+  border-left: 5px solid #0dcaf0;
+}
+		
 		</style>
 	</head>
 	<body>
@@ -270,8 +281,20 @@
 				let currentFile;
 				
 				loadComandos();
+
+
+
+let tokenCarga = localStorage.getItem("tokenCifra");
+
+const headers = tokenCarga ? { "Authorization": "Bearer " + tokenCarga } : {};
+
+
+				//fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
+
+fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
+  headers: headers
+})
 				
-				fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
 				.then(response => response.json())
 				.then(files => {
 					const songList = document.getElementById('songList');
@@ -300,17 +323,56 @@
 										// Verifica se há alguma palavra com mais de 5 letras
 										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
 										
+
+const notasBase = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+
+const sufixos = [
+  '', 'm', '7', 'maj7', '7M', 'm7', 'mMaj7', 'dim', 'aug',
+  'sus2', 'sus4', '6', 'm6', '9', 'maj9', 'm9', '11', '13',
+  'add9', 'add11', 'add13', '7b5', '7#5', '7b9', '7#9',
+  '13b9', '7sus4', '7sus2', '5', 'no3', 'no5', 'm7b5'
+];
+
+const baixos = ['', '/C', '/C#', '/Db', '/D', '/D#', '/Eb', '/E', '/F', '/F#', '/Gb', '/G', '/G#', '/Ab', '/A', '/A#', '/Bb', '/B'];
+
+const acordesValidos = [];
+
+notasBase.forEach(nota => {
+  sufixos.forEach(sufixo => {
+    baixos.forEach(baixo => {
+      acordesValidos.push(nota + sufixo + baixo);
+    });
+  });
+});
+
+
+const palavras = linhaTrim
+.replace(/[()\[\],]/g, '') // remove parênteses, colchetes e vírgulas
+.split(/\s+/);
+const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValidos.includes(p));
+
+
 										if (index === 0) {
 											return `<h5>${linhaComEspacos}</h5>`;
-											} else if ((linhaTrim.length < 6 || / {3,}/.test(linha)) && !hasLongWord) {
+
+//											} else if ((linhaTrim.length < 6 || / {3,}/.test(linha)) && !hasLongWord) {
+											} else if (isLinhaDeAcordes) {
+											
 											return `<strong class="corCifra">${linhaComEspacos}</strong>`;
 											} else {
 											return linhaComEspacos;
 										}
+										
 									}).join('<br>');
 									txtViewer.innerHTML = htmlFormatado;
 									txtViewer.scrollTop = 0;
 									document.getElementById('right-panel').scrollTop = 0;
+									
+									
+// Destaca o arquivo selecionado 
+document.querySelectorAll('#songList li').forEach(el => el.classList.remove('selected-song'));
+li.classList.add('selected-song');
+console.log(li)									
 									/*
 										setTimeout(() => {
 										  startRollout();
