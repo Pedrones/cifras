@@ -89,6 +89,11 @@
 			color: yellow;
 			}
 			
+			
+			#editArea {
+			    white-space: pre-wrap;
+			}
+			
 		</style>
 	</head>
 	<body>
@@ -129,7 +134,7 @@
 				<!-- Painel Direito -->
 				<div class="col-md-9" id="right-panel">
 					<!-- Botões de controle -->
-					<div id="divControle" >
+					<div id="divControle">
 						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
 						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90"/>
 						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
@@ -144,11 +149,11 @@
 						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
 						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
 						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
-					</div>
+					<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton"><i class="bi bi-pencil-fill"></i></button></div>
 					<!-- Rolagem de telas -->
 					<div id="divRolagem">
 						<!-- Conteudo do arquivo -->
-						<div id="txtViewer" ></div>
+						<div id="txtViewer"></div>
 					</div>
 				</div>
 			</div>
@@ -181,7 +186,6 @@
 					</div>
 				</div>
 			</div>
-			
 			<!-- Modal de configuracoes -->
 			<div aria-hidden="true" aria-labelledby="configModalLabel" class="modal fade" id="configModal" tabindex="-1">
 				<div class="modal-dialog">
@@ -192,35 +196,51 @@
 						</div>
 						<div class="modal-body">
 							<form id="configForm">
-								
 								<h5>Tempo em segundos para inciar rolagem</h5>
 								<div class="mb-3 d-flex align-items-center">
 									<label class="form-label me-2 mb-0" for="autoStartTime" style="min-width: 300px;">Após selecionar a cifra</label>
-									<input class="form-control" id="autoStartTime" name="autoStartTime" type="number" style="max-width: 200px;"/>
+									<input class="form-control" id="autoStartTime" name="autoStartTime" style="max-width: 200px;" type="number"/>
 								</div>
 								<div class="mb-3 d-flex align-items-center">
 									<label class="form-label me-2 mb-0" for="autoStartVoiceTime" style="min-width: 300px;">Após abrir com comando de voz</label>
-									<input class="form-control" id="autoStartVoiceTime" name="autoStartVoiceTime" type="number" style="max-width: 200px;"/>
+									<input class="form-control" id="autoStartVoiceTime" name="autoStartVoiceTime" style="max-width: 200px;" type="number"/>
 								</div>
 								<h5>Comando de voz</h5>
 								<div class="mb-3 d-flex align-items-center">
 									<label class="form-label me-2 mb-0" for="voiceCommandWord" style="min-width: 300px;">Palavra para comando de voz</label>
-									<input class="form-control" id="voiceCommandWord" name="voiceCommandWord" type="text" style="max-width: 200px;"/>
+									<input class="form-control" id="voiceCommandWord" name="voiceCommandWord" style="max-width: 200px;" type="text"/>
 								</div>
 								<div class="mb-3 form-check form-switch">
-									<input class="form-check-input" type="checkbox" id="showVoiceCommandModal" name="showVoiceCommandModal"/>
+									<input class="form-check-input" id="showVoiceCommandModal" name="showVoiceCommandModal" type="checkbox"/>
 									<label class="form-check-label" for="showVoiceCommandModal">Apresentar instruções ao ativar microfone</label>
 								</div>
 								<div class="form-check form-switch mb-3">
-									<input class="form-check-input" type="checkbox" id="darkModeToggle">
+									<input class="form-check-input" id="darkModeToggle" type="checkbox"/>
 									<label class="form-check-label" for="darkModeToggle">Modo Escuro</label>
 								</div>
-								
 							</form>
 						</div>
 						<div class="modal-footer">
 							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
 							<button class="btn btn-primary" id="saveConfigButton" type="button">Salvar Configurações</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Modal de edição -->
+			<div aria-hidden="true" aria-labelledby="editModalLabel" class="modal fade" id="editModal" tabindex="-1">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editModalLabel">Editar Arquivo</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<textarea class="form-control" id="editArea" rows="20" style="font-family: monospace;"></textarea>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+							<button class="btn btn-primary" onclick="saveChanges()" type="button">Salvar</button>
 						</div>
 					</div>
 				</div>
@@ -247,6 +267,7 @@
 				let step;
 				let recognition;
 				let recognizing = false;
+				let currentFile;
 				
 				loadComandos();
 				
@@ -262,6 +283,9 @@
 							li.textContent = file.name;
 							li.style.cursor = 'pointer';
 							li.onclick = () => {
+								
+								currentFile = file.name;
+								
 								fetch(file.download_url)
 								.then(res => res.text())
 								.then(texto => {
@@ -271,17 +295,17 @@
 										const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 										const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
 										const linhaTrim = linha.trim();
-
-
+										
+										
 										// Verifica se há alguma palavra com mais de 5 letras
 										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
-
+										
 										if (index === 0) {
 											return `<h5>${linhaComEspacos}</h5>`;
 											} else if ((linhaTrim.length < 6 || / {3,}/.test(linha)) && !hasLongWord) {
-												return `<strong class="corCifra">${linhaComEspacos}</strong>`;
+											return `<strong class="corCifra">${linhaComEspacos}</strong>`;
 											} else {
-												return linhaComEspacos;
+											return linhaComEspacos;
 										}
 									}).join('<br>');
 									txtViewer.innerHTML = htmlFormatado;
@@ -327,12 +351,12 @@
 					
 					const tbody = document.getElementById("tabComandos");
 					tbody.innerHTML = "";
-				    comandos.forEach(([comando, descricao, botao]) => {
-					      const tr = document.createElement("tr");
-					      tr.innerHTML = 
-					        `<td>${comando}</td><td>${descricao}</td>`;
-					      tbody.appendChild(tr);
-				    });
+					    comandos.forEach(([comando, descricao, botao]) => {
+						      const tr = document.createElement("tr");
+						      tr.innerHTML = 
+						        `<td>${comando}</td><td>${descricao}</td>`;
+						      tbody.appendChild(tr);
+					    });
 				}
 				
 				// **********************************************
@@ -424,7 +448,6 @@
 				const observer = new IntersectionObserver((entries) => {
 					entries.forEach(entry => {
 						if (entry.isIntersecting) {
-							console.log("txtViewer visível - iniciando scroll");
 							startRollout();
 							} else {
 							console.log("txtViewer fora de vista - parando scroll");
@@ -580,13 +603,13 @@
 				// **********************************************
 				function processVoiceCommand(command) {
 					
-				    comandos.forEach(([comando, descricao, botao]) => {
-					
+					    comandos.forEach(([comando, descricao, botao]) => {
+						
 						if (command === comando) {
 							document.getElementById(botao).click();
 							return;
 						}
-				    });
+					    });
 					
 					if (command.startsWith(`${voiceCommandWord} tocar`)) {
 						const songName = command.replace(`${voiceCommandWord} tocar`, '').trim();
@@ -685,7 +708,7 @@
 						};
 					}
 				});
-
+				
 				window.addEventListener('load', function() {
 					if (autoStartTime) {
 						// Apply auto start time logic
@@ -703,7 +726,7 @@
 						// Apply logic to show voiceCommandModal when microphone is activated
 					}
 				});
-
+				
 				document.addEventListener('DOMContentLoaded', function () {
 					const darkModeToggle = document.getElementById('darkModeToggle');
 					const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -723,8 +746,85 @@
 						}
 					});
 				});
+				
+				// **********************************************
+				// Salva as edições
+				// **********************************************
+				async function saveChanges() {
+					let tokenCifra = localStorage.getItem("tokenCifra");
+					
+					if (!tokenCifra) {
+						tokenCifra = prompt('Digite a chave de permissão');
+						if (tokenCifra !== null) {
+							localStorage.setItem("tokenCifra", tokenCifra);
+							} else {
+							alert("Token não informado.");
+							return;
+						}
+					}
+					
+					const content = document.getElementById('editArea').value;
+					const base64Content = btoa(unescape(encodeURIComponent(content)));
+					const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${currentFile}`;
+					
+					// Primeiro, obter o SHA atual do arquivo
+					let sha;
+					try {
+						const getResponse = await fetch(url, {
+							headers: {
+								"Authorization": "Bearer " + tokenCifra,
+								"Accept": "application/vnd.github.v3+json"
+							}
+						});
+						
+						if (getResponse.ok) {
+							const fileData = await getResponse.json();
+							sha = fileData.sha;
+						}
+						} catch (error) {
+						console.error("Erro ao obter SHA:", error);
+						alert("Erro ao obter informações do arquivo.");
+						return;
+					}
+					
+					// Agora, fazer o PUT com o SHA (se existir)
+					const putBody = {
+						message: "Alterações via página web",
+						content: base64Content
+					};
+					
+					if (sha) {
+						putBody.sha = sha;
+					}
+					
+					const response = await fetch(url, {
+						method: "PUT",
+						headers: {
+							"Authorization": "Bearer " + tokenCifra,
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(putBody)
+					});
+					
+					const result = await response.json();
+					if (response.ok) {
+						alert("Alterações salvas com sucesso! Aguarde uns minutos para recarregar.");
+						document.getElementById('txtViewer').innerText = content;
+						} else {
+						alert("Erro: " + result.message);
+					}
+				}
+				
+				// **********************************************
+				// Adiciona um evento ao botão editButton para carregar o conteúdo de txtViewer em editArea
+				// **********************************************
+				document.getElementById('editButton').addEventListener('click', function () {
+					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
+				});
+				
+				
 			</script>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-			
-		</body>
-	</html>
+		</div>
+	</body>
+</html>
