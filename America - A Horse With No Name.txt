@@ -45,7 +45,8 @@ la la la la la
 
       Em              D/F#
 After two days in the desert sun
-   Em              D/F#   My skin began to turn red
+   Em              D/F#   
+My skin began to turn red
       Em                D/F#
 After three days in the desert fun
       Em                 D/F#
@@ -122,3 +123,4 @@ D/F# = 2 X 0 2 3 2
 D6/9 = X 5 4 2 0 0
 Em = 0 2 2 0 0 0
 Em/F# = 2 X 2 0 0 X
+
