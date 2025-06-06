@@ -93,25 +93,6 @@
 			    white-space: pre-wrap;
 			}
 			
-
-.selected-song {
-  background-color: #0dcaf0 !important;
-  color: #000 !important;
-  font-weight: bold !important;
-  border-left: 5px solid #0a58ca !important;
-  box-shadow: 0 0 10px rgba(13, 202, 240, 0.6);
-  transition: all 0.3s ease;
-}
-
-body.dark-mode .selected-song {
-  background-color: #0dcaf0 !important;
-  color: #000 !important;
-  font-weight: bold !important;
-  border-left: 5px solid #0a58ca !important;
-  box-shadow: 0 0 10px rgba(13, 202, 240, 0.8);
-}
-
-		
 		</style>
 	</head>
 	<body>
@@ -272,36 +253,37 @@ body.dark-mode .selected-song {
 				const usuario = "pedrones";
 				const repositorio = "cifras";
 				const pasta = "cifras";
-				
-				let autoStartTime = localStorage.getItem('autoStartTime') || 5;
-				let autoStartVoiceTime = localStorage.getItem('autoStartVoiceTime') || 5;
-				let voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
-				let showVoiceCommandModal = localStorage.getItem('showVoiceCommandModal') === 'true';
+				// Para localStorage
+				let autoStartTime;
+				let autoStartVoiceTime;
+				let voiceCommandWord;
+				let showVoiceCommandModal;
+				let isDarkMode;
+				// Para modal de comandos
 				let comandos = [];
+				// Controle de rollout
 				let rolloutInterval;
 				let isPaused = false;
 				let scrolled = 0;
 				let scrollHeight;
 				let step;
+				// Para controle de microfone
 				let recognition;
 				let recognizing = false;
 				let currentFile;
 				
-				loadComandos();
-
-
-
-let tokenCarga = localStorage.getItem("tokenCifra");
-
-const headers = tokenCarga ? { "Authorization": "Bearer " + tokenCarga } : {};
-
-
-				//fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`)
-
-fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
-  headers: headers
-})
+				// Le as variaveis de storage local 
+	//			readLocalStorage();
+                // Carrega os comandos na modal 				
+	//			loadComandos();
 				
+				// Obtem token do github se existir 
+				let tokenCarga = localStorage.getItem("tokenCifra");
+				const headers = tokenCarga ? { "Authorization": "Bearer " + tokenCarga } : {};
+				// Busca os arquivos .txt 
+				fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
+					  headers: headers
+				})
 				.then(response => response.json())
 				.then(files => {
 					const songList = document.getElementById('songList');
@@ -326,43 +308,36 @@ fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
 										const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
 										const linhaTrim = linha.trim();
 										
-										
 										// Verifica se há alguma palavra com mais de 5 letras
 										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
 										
-
-const notasBase = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
-
-const sufixos = [
-  '', 'm', '7', 'maj7', '7M', 'm7', 'mMaj7', 'dim', 'aug',
-  'sus2', 'sus4', '6', 'm6', '9', 'maj9', 'm9', '11', '13',
-  'add9', 'add11', 'add13', '7b5', '7#5', '7b9', '7#9',
-  '13b9', '7sus4', '7sus2', '5', 'no3', 'no5', 'm7b5'
-];
-
-const baixos = ['', '/C', '/C#', '/Db', '/D', '/D#', '/Eb', '/E', '/F', '/F#', '/Gb', '/G', '/G#', '/Ab', '/A', '/A#', '/Bb', '/B'];
-
-const acordesValidos = [];
-
-notasBase.forEach(nota => {
-  sufixos.forEach(sufixo => {
-    baixos.forEach(baixo => {
-      acordesValidos.push(nota + sufixo + baixo);
-    });
-  });
-});
-
-
-const palavras = linhaTrim
-.replace(/[()\[\],]/g, '') // remove parênteses, colchetes e vírgulas
-.split(/\s+/);
-const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValidos.includes(p));
-
-
+										// Monta notas musicais possiveis
+										const notasBase = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+										const sufixos = [
+										  '', 'm', '7', 'maj7', '7M', 'm7', 'mMaj7', 'dim', 'aug',
+										  'sus2', 'sus4', '6', 'm6', '9', 'maj9', 'm9', '11', '13',
+										  'add9', 'add11', 'add13', '7b5', '7#5', '7b9', '7#9',
+										  '13b9', '7sus4', '7sus2', '5', 'no3', 'no5', 'm7b5'
+										];
+										const baixos = ['', '/C', '/C#', '/Db', '/D', '/D#', '/Eb', '/E', '/F', '/F#', '/Gb', '/G', '/G#', '/Ab', '/A', '/A#', '/Bb', '/B'];
+										const acordesValidos = [];
+										
+										notasBase.forEach(nota => {
+											  sufixos.forEach(sufixo => {
+												    baixos.forEach(baixo => {
+													      acordesValidos.push(nota + sufixo + baixo);
+												    });
+											  });
+										});
+										
+										const palavras = linhaTrim
+										.replace(/[()\[\],]/g, '') // remove parênteses, colchetes e vírgulas
+										.split(/\s+/);
+										const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValidos.includes(p));
+										
 										if (index === 0) {
 											return `<h5>${linhaComEspacos}</h5>`;
-
-//											} else if ((linhaTrim.length < 6 || / {3,}/.test(linha)) && !hasLongWord) {
+											
 											} else if (isLinhaDeAcordes) {
 											
 											return `<strong class="corCifra">${linhaComEspacos}</strong>`;
@@ -375,25 +350,15 @@ const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValid
 									txtViewer.scrollTop = 0;
 									document.getElementById('right-panel').scrollTop = 0;
 									
+									// Remove marcador de todos os itens e deixa em negrito o clicado
+									document.querySelectorAll('#songList li').forEach(el => {
+										  el.innerHTML = el.textContent; // remove qualquer HTML anterior
+									});
+									li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 									
-
-
-
-
-// Remove marcador de todos os itens
-document.querySelectorAll('#songList li').forEach(el => {
-  el.innerHTML = el.textContent; // remove qualquer HTML anterior
-});
-
-// Adiciona marcador ao item clicado
-li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
-
-
-									/*
-										setTimeout(() => {
-										  startRollout();
-										}, 5000); 
-									*/
+									// Inicia o rollout
+									startRollout();
+									
 								})
 								.catch(err => {
 									txtViewer.textContent = "Erro ao carregar o arquivo.";
@@ -408,6 +373,18 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 					console.error("Erro ao acessar a API do GitHub:", error);
 					document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
 				});
+				
+				// **********************************************
+				// Função para carregar comandos 
+				// **********************************************
+				function readLocalStorage() {
+					autoStartTime = Number(localStorage.getItem('autoStartTime')) || 5;
+					autoStartVoiceTime = Number(localStorage.getItem('autoStartVoiceTime')) || 5;
+					voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
+					const showModal = localStorage.getItem('showVoiceCommandModal');
+					showVoiceCommandModal = showModal === null ? true : showModal === 'true';
+					isDarkMode = localStorage.getItem('darkMode') === 'true';
+				}
 				
 				// **********************************************
 				// Função para carregar comandos 
@@ -462,6 +439,28 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 				//	Inicia o rollout 
 				// **********************************************
 				function startRollout(resetToTop = false) {
+					
+					// Verifica o tempo de espera para iniciar 
+					let waitTime;
+					// Se comando de voz ligado
+					if (recognition) {
+						waitTime = autoStartVoiceTime * 1000;
+						} else {
+						waitTime = autoStartTime * 1000;
+					}
+					// Espera o tempo determinado
+					if (waitTime > 0) {	
+						setTimeout(() => {
+							  executeRollout(resetToTop);
+						}, waitTime); 
+					}				
+				}
+				
+				// **********************************************
+				//	Inicia o rollout 
+				// **********************************************
+				function executeRollout(resetToTop = false) {
+					
 					const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;     
 					const panel = document.getElementById('txtViewer');
 					
@@ -705,7 +704,6 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 				// **********************************************
 				// Abre a janela modal de comandos de voz 
 				// **********************************************
-				
 				function abrirModalComandos() {
 					  if (localStorage.getItem('showVoiceCommandModal') === 'false') return;
 					
@@ -717,17 +715,26 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 					  checkbox.checked = false;
 					
 					  checkbox.addEventListener('change', () => {
-						    localStorage.setItem('naoMostrarComandos', checkbox.checked);
+						    localStorage.setItem('showVoiceCommandModal', checkbox.checked);
 					});
+				}
+				
+				// **********************************************
+				// Carrega campos da modal de configurações 
+				// **********************************************
+				function carregarConfig() {
+					document.getElementById('autoStartTime').value = autoStartTime;
+					document.getElementById('autoStartVoiceTime').value = autoStartVoiceTime;
+					document.getElementById('voiceCommandWord').value = voiceCommandWord;
+					document.getElementById('showVoiceCommandModal').checked = showVoiceCommandModal;
+					document.getElementById('darkModeToggle').checked = isDarkMode; 
 				}
 				
 				// **********************************************
 				// Esconde o controle de voz se browser incompativel
 				// **********************************************
-				window.addEventListener('DOMContentLoaded', () => {
-					
-					localStorage.removeItem('naoMostrarComandos');
-					
+				document.addEventListener('DOMContentLoaded', function () {
+					// Verifica suporte ao reconhecimento de voz
 					const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 					if (!SpeechRecognition) {
 						const btnVoice = document.getElementById('btnVoice');
@@ -735,86 +742,20 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 							btnVoice.style.display = 'none';
 						}
 					}
-				});
+
+					// Le as variaveis de storage local 
+					readLocalStorage();
 				
-				document.addEventListener('DOMContentLoaded', function() {
-					// Carregar configurações do localStorage
-					autoStartTime = localStorage.getItem('autoStartTime') || 5;
-					autoStartVoiceTime = localStorage.getItem('autoStartVoiceTime') || 5;
-					voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
-					showVoiceCommandModal = localStorage.getItem('showVoiceCommandModal') || true; 
+					// Carrega os campos do modal de configurações 
+					carregarConfig();
 					
-					document.getElementById('autoStartTime').value = autoStartTime;
-					document.getElementById('autoStartVoiceTime').value = autoStartVoiceTime;
-					document.getElementById('voiceCommandWord').value = voiceCommandWord;
-					document.getElementById('showVoiceCommandModal').checked = showVoiceCommandModal;
-					
-					// Salvar configurações no localStorage
-					document.getElementById('saveConfigButton').addEventListener('click', function() {
-						localStorage.setItem('autoStartTime', document.getElementById('autoStartTime').value);
-						localStorage.setItem('autoStartVoiceTime', document.getElementById('autoStartVoiceTime').value);
-						localStorage.setItem('voiceCommandWord', document.getElementById('voiceCommandWord').value);
-						localStorage.setItem('showVoiceCommandModal', document.getElementById('showVoiceCommandModal').checked);
-						// Obtém a referência ao modal do Bootstrap e fecha
-						var modalElement = document.getElementById("configModal");
-						var modalInstance = bootstrap.Modal.getInstance(modalElement);
-						modalInstance.hide();
-						alert('Configurações salvas com sucesso!');
-						
-					});
-					
-					// Aplicar configurações ao comportamento de rolagem e voz
-					function startRollout() {
-						setTimeout(function() {
-							// Código para iniciar a rolagem
-						}, autoStartTime);
-					}
-					
-					function startRolloutByVoice() {
-						setTimeout(function() {
-							// Código para iniciar a rolagem por voz
-						}, autoStartVoiceTime);
-					}
-					
-					// Substituir a palavra de comando de voz
-					if (typeof recognition !== 'undefined') {
-						recognition.onresult = function(event) {
-							const transcript = event.results[0][0].transcript.trim().toLowerCase();
-							if (transcript === voiceCommandWord) {
-								startRolloutByVoice();
-							}
-						};
-					}
-				});
-				
-				window.addEventListener('load', function() {
-					if (autoStartTime) {
-						// Apply auto start time logic
-					}
-					
-					if (autoStartVoiceTime) {
-						// Apply auto start voice time logic
-					}
-					
-					if (voiceCommandWord) {
-						// Apply voice command word logic
-					}
-					
-					if (showVoiceCommandModal) {
-						// Apply logic to show voiceCommandModal when microphone is activated
-					}
-				});
-				
-				document.addEventListener('DOMContentLoaded', function () {
-					const darkModeToggle = document.getElementById('darkModeToggle');
-					const isDarkMode = localStorage.getItem('darkMode') === 'true';
-					
-					if (isDarkMode) {
+					// Aplicar modo escuro
+					if (isDarkMode === 'true' || isDarkMode === true) {
 						document.body.classList.add('dark-mode');
-						darkModeToggle.checked = true;
+						document.getElementById('darkModeToggle').checked = true;
 					}
 					
-					darkModeToggle.addEventListener('change', function () {
+					document.getElementById('darkModeToggle').addEventListener('change', function () {
 						if (this.checked) {
 							document.body.classList.add('dark-mode');
 							localStorage.setItem('darkMode', 'true');
@@ -823,7 +764,47 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 							localStorage.setItem('darkMode', 'false');
 						}
 					});
+					
+					// Salvar configurações no localStorage
+					document.getElementById('saveConfigButton').addEventListener('click', function () {
+						localStorage.setItem('autoStartTime', document.getElementById('autoStartTime').value);
+						localStorage.setItem('autoStartVoiceTime', document.getElementById('autoStartVoiceTime').value);
+						localStorage.setItem('voiceCommandWord', document.getElementById('voiceCommandWord').value);
+						localStorage.setItem('showVoiceCommandModal', document.getElementById('showVoiceCommandModal').checked);
+						localStorage.setItem('darkMode', document.getElementById('darkModeToggle').checked);
+						
+						var modalElement = document.getElementById("configModal");
+						var modalInstance = bootstrap.Modal.getInstance(modalElement);
+						modalInstance.hide();
+						
+						readLocalStorage();
+						alert('Configurações salvas com sucesso!');
+					});
+					
+					// Aplicar configurações ao comportamento de rolagem e voz
+					function startRollout() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem
+						}, autoStartTime);
+					}
+					
+					function startRolloutByVoice() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem por voz
+						}, autoStartVoiceTime);
+					}
+					
+					// Substituir a palavra de comando de voz
+					if (typeof recognition !== 'undefined') {
+						recognition.onresult = function (event) {
+							const transcript = event.results[0][0].transcript.trim().toLowerCase();
+							if (transcript === voiceCommandWord) {
+								startRolloutByVoice();
+							}
+						};
+					}
 				});
+				
 				
 				// **********************************************
 				// Salva as edições
@@ -899,7 +880,6 @@ li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 				document.getElementById('editButton').addEventListener('click', function () {
 					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
 				});
-				
 				
 			</script>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
