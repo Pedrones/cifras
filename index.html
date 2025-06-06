@@ -378,8 +378,12 @@
 				// Função para carregar comandos 
 				// **********************************************
 				function readLocalStorage() {
-					autoStartTime = Number(localStorage.getItem('autoStartTime')) || 5;
-					autoStartVoiceTime = Number(localStorage.getItem('autoStartVoiceTime')) || 5;
+					
+					let stored;
+					stored = localStorage.getItem('autoStartTime');
+					autoStartTime = stored !== null ? Number(stored) : 5;
+					stored = localStorage.getItem('autoStartVoiceTime');
+					autoStartVoiceTime = stored !== null ? Number(stored) : 5;
 					voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
 					const showModal = localStorage.getItem('showVoiceCommandModal');
 					showVoiceCommandModal = showModal === null ? true : showModal === 'true';
