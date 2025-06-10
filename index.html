@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Visualizador de Cifras</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+		<style>
+			html, body {
+			height: 100%;
+			margin: 0;
+			overflow: hidden; /* Impede rolagem global */
+			}
+			
+			#left-panel {
+			height: calc(100vh - 60px);
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			margin-top: 60px;
+			}
+			
+			#right-panel {
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			padding-top: 60px; /* altura da barra fixa */
+			overflow: hidden;
+			}
+			
+			#divControle {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			background-color: white;
+			z-index: 1050;
+			padding: 10px;
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 10px;
+			border-bottom: 1px solid #ccc;
+			}
+			
+			#divRolagem {
+			flex: 1;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			}
+			
+			#txtViewer {
+			flex: 1;
+			overflow-y: auto;
+			font-family: monospace;
+			padding: 10px;
+			}
+			
+			.list-group-item:hover {
+			  cursor: pointer !important;
+			}
+			
+			.corCifra {
+			color:red;
+			}
+			
+			body.dark-mode {
+			background-color: #121212;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode #divControle,
+			body.dark-mode .modal-content {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item:hover {
+			background-color: #2a2a2a;
+			}
+			
+			body.dark-mode .corCifra {
+			color: yellow;
+			}
+			
+			#editArea {
+			    white-space: pre-wrap;
+			}
+			
+		</style>
+		
+		<script>
+			// **********************************************
+			// Declaração de variáveis 
+			// **********************************************
+			const usuario = "pedrones";
+			const repositorio = "cifras";
+			const pasta = "cifras";
+			// Para localStorage
+			let autoStartTime;
+			let autoStartVoiceTime;
+			let voiceCommandWord;
+			let showVoiceCommandModal;
+			let isDarkMode;
+			// Para modal de comandos
+			let comandos = [];
+			// Controle de rollout
+			let rolloutInterval;
+			let isPaused = false;
+			let scrolled = 0;
+			let scrollHeight;
+			let step;
+			// Para controle de microfone
+			let recognition;
+			let recognizing = false;
+			let currentFile;
+			
+			let globalPlaylists = null;
+			let globalConfigs = null;
+			let playlistsSha = null;
+			
+			// ************************************
+			// Lê playlists e config do GitHub
+			// ************************************
+			async function loadGlobalPlaylists() {
+				const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
+					headers: autHeaders
+				});
+				const data = await response.json();
+				playlistsSha = data.sha;
+				
+				// Decodificação correta em UTF-8
+				const binary = atob(data.content);
+				const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+				const decodedContent = new TextDecoder('utf-8').decode(bytes);     
+				
+				const parsedData = JSON.parse(decodedContent);
+				
+				globalPlaylists = parsedData.playlists;          
+				globalConfigs = parsedData.configuracoes;        
+				
+				autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
+				autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
+				voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
+				
+				// Conversão segura de string para booleano
+				showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
+				isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
+
+
+// Aplica o modo escuro aqui
+if (isDarkMode) {
+document.body.classList.add('dark-mode');
+document.getElementById('darkModeToggle').checked = true;
+}
+
+				// Carrega os campos do modal de configurações 
+				carregarConfig();	
+				// Carrega select de Playlists
+				loadSelectPlaylists();
+			}
+			
+			
+			// ************************************
+			// Salva playlists e config no github
+			// ************************************
+			async function savePlaylistGithub(tipo) {
+				if (!myToken || !playlistsSha || !globalPlaylists) {
+					alert("Token, SHA ou dados não disponíveis para salvar no Github.");
+					return;
+				}
+				
+				const fullData = {
+					playlists: globalPlaylists,
+					configuracoes: globalConfigs
+				};
+
+				const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
+
+				const putResponse = await fetch(myUrl + 'playlists.json', {
+					method: 'PUT',
+					headers: autHeaders,
+					body: JSON.stringify({
+						message: `Atualiza ${tipo} via variável global`,
+						content: encodedContent,
+						sha: playlistsSha
+					})
+				});
+				
+				if (!putResponse.ok) {
+					alert('Erro ao salvar a ' + tipo + ' no Github.');
+					} else {
+					alert(tipo + ' exportada com sucesso');
+				}
+			}
+			
+			// ************************************
+			// Chama a carga da playlist ao carregar o documento
+			// ************************************
+			window.addEventListener('DOMContentLoaded', async () => {
+				await loadGlobalPlaylists();
+				// ... outras inicializações
+			});
+			
+			// ************************************
+			// Função para salvar a playlist na variavel
+			// ************************************
+			async function savePlaylistLocal() {
+				const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
+				const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
+				globalPlaylists[selectedPlaylist] = selectedSongs;  
+				document.getElementById("btnFechaPlaylist").click();
+				document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
+				//alert("Playlist atualizada na variável global.");
+				// Chamada assíncrona sem aguardar
+				await savePlaylistGithub('Playlist');
+				
+			}
+			
+		</script>
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<!-- Painel Esquerdo -->
+				<div class="col-md-3 p-3" id="left-panel">
+					<div style="display:none">
+						<!-- Abas -->
+						<ul class="nav nav-tabs" id="abasExemplo" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button aria-controls="arqLoc" aria-selected="true" class="nav-link active" data-bs-target="#arqLoc" data-bs-toggle="tab" id="arqLoc-tab" role="tab" type="button">Local</button>
+							</li>
+							<li class="nav-item" role="presentation">
+								<button aria-controls="arqGdr" aria-selected="false" class="nav-link" data-bs-target="#arqGdr" data-bs-toggle="tab" id="arqGdr-tab" role="tab" type="button">Google Drive</button>
+							</li>
+						</ul>
+						<!-- Conteúdo das Abas -->
+						<div class="tab-content p-3 border border-top-0" id="abasExemploConteudo">
+							<div aria-labelledby="arqLoc-tab" class="tab-pane fade show active" id="arqLoc" role="tabpanel">
+								<br/>
+								<input accept=".txt,.pdf,.doc*,.html,.rtf" class="form-control" directory="True" id="folderInput" multiple="True" type="file" webkitdirectory="True"/>
+							</div>
+							<div aria-labelledby="arqGdr-tab" class="tab-pane fade" id="arqGdr" role="tabpanel">
+								<br/>
+								<input class="form-control" id="cloud-link" placeholder="https://drive.google.com/..." type="url"/>
+								<input class="form-control mb-3" id="api-key" placeholder="Cole sua chave de API aqui" type="text"/>
+								<button class="btn btn-outline-secondary w-100 mb-3" onclick="loadDriveFiles()">Carregar Arquivos do Drive</button>
+							</div>
+						</div>
+					</div>
+					<!-- Nav tabs -->
+					<ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" data-bs-toggle="tab" href="#divSearch" style="font-size: 12px;">Músicas</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="tab" href="#divPlaylist" style="font-size: 12px;">Playlists</a>
+						</li>
+					</ul>
+					<!-- Tab panes -->
+					<div class="tab-content">
+						<div class="container tab-pane active border border-top-0 p-3" id="divSearch">
+							<input class="form-control" id="search-filter" placeholder="Buscar música..." style="font-size: 12px;" type="text"/>
+						</div>
+						<div class="container tab-pane fade border border-top-0 p-3" id="divPlaylist">
+							<div class="d-flex align-items-center gap-2">
+								<select class="form-control" id="playlistSelect" style="font-size: 12px; max-width: 300px;"><option value="">Todas</option>
+									<option value="">Todas as músicas</option>
+								</select>
+								<button class="btn btn-outline-secondary" id="btnEditPlaylist" onclick="openModalPlaylist(false);" style="font-size: 0.6rem;">
+									<i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
+								</button>
+								<button class="btn btn-outline-secondary" id="btnNewPlaylist" onclick="openModalPlaylist(true);" style="font-size: 0.6rem;">
+									<i class="bi bi-plus-lg" style="font-size: 0.8rem;"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+					<!-- Lista de musicas -->
+					<ul class="list-group" id="songList" style="font-size: 12px;">
+					</ul>
+				</div>
+				<!-- Painel Direito -->
+				<div class="col-md-9" id="right-panel">
+					<!-- Botões de controle -->
+					<div id="divControle">
+						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
+						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90">
+						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
+						<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
+						<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+						<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+						<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
+						<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
+						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
+						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton"><i class="bi bi-pencil-fill"></i></button>
+					</input></div>
+					<!-- Rolagem de telas -->
+					<div id="divRolagem">
+						<!-- Conteudo do arquivo -->
+						<div id="txtViewer"></div>
+					</div>
+				</div>
+			</div>
+			<!-- Modal para exibir mapeamento de comandos -->
+			<div aria-hidden="true" aria-labelledby="voiceCommandModalLabel" class="modal fade" id="voiceCommandModal" tabindex="-1">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="voiceCommandModalLabel">Comandos de Voz Disponíveis</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<table class="table table-bordered" style="font-size:small">
+								<thead>
+									<tr><th>Diga</th><th>Para</th></tr>
+								</thead>
+								<tbody id="tabComandos"></tbody>
+							</table>
+							<ul id="voiceCommandList"></ul>
+						</div>
+						<div class="modal-footer">
+							<div class="form-check mt-3">
+								  <input class="form-check-input" id="naoMostrarNovamente" type="checkbox" value=""/>
+								  <label class="form-check-label" for="naoMostrarNovamente">
+									    Não mostrar novamente
+								  </label>
+							</div>
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Modal de configuracoes -->
+			<div aria-hidden="true" aria-labelledby="configModalLabel" class="modal fade" id="configModal" tabindex="-1">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="configModalLabel">Configurações</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<form id="configForm">
+								<h5>Tempo em segundos para inciar rolagem</h5>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="autoStartTime" style="min-width: 300px;">Após selecionar a cifra</label>
+									<input class="form-control" id="autoStartTime" name="autoStartTime" style="max-width: 200px;" type="number"/>
+								</div>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="autoStartVoiceTime" style="min-width: 300px;">Após abrir com comando de voz</label>
+									<input class="form-control" id="autoStartVoiceTime" name="autoStartVoiceTime" style="max-width: 200px;" type="number"/>
+								</div>
+								<h5>Comando de voz</h5>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="voiceCommandWord" style="min-width: 300px;">Palavra para comando de voz</label>
+									<input class="form-control" id="voiceCommandWord" name="voiceCommandWord" style="max-width: 200px;" type="text"/>
+								</div>
+								<div class="mb-3 form-check form-switch">
+									<input class="form-check-input" id="showVoiceCommandModal" name="showVoiceCommandModal" type="checkbox"/>
+									<label class="form-check-label" for="showVoiceCommandModal">Apresentar instruções ao ativar microfone</label>
+								</div>
+								<div class="form-check form-switch mb-3">
+									<input class="form-check-input" id="darkModeToggle" type="checkbox"/>
+									<label class="form-check-label" for="darkModeToggle">Modo Escuro</label>
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+							<button class="btn btn-primary" id="saveConfigButton" type="button">Salvar Configurações</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Modal de edição -->
+			<div aria-hidden="true" aria-labelledby="editModalLabel" class="modal fade" id="editModal" tabindex="-1">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editModalLabel">Editar Arquivo</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<textarea class="form-control" id="editArea" rows="20" style="font-family: monospace;"></textarea>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+							<button class="btn btn-primary" onclick="saveChanges()" type="button">Salvar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Modal de Listas de Músicas -->
+			<div aria-hidden="true" aria-labelledby="playlistModalLabel" class="modal fade" id="playlistModal" tabindex="-1">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="playlistModalLabel">Gerenciar Lista de Músicas</h5>
+							<button aria-label="Fechar" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<h5 id="playlistTitle"></h5>
+							<div class="border p-2" id="songCheckboxList" style="max-height: 300px; overflow-y: auto;">
+								<!-- Checkboxes serão inseridos aqui -->
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" id="btnFechaPlaylist" data-bs-dismiss="modal">Cancelar</button>
+							<!--
+								<button class="btn btn-primary" onclick="createPlaylist()">Criar</button>
+							-->
+							<button class="btn btn-primary" onclick="savePlaylistLocal()">Salvar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<script>
+				
+				
+				// Obtem token do github se existir 
+				let myToken = localStorage.getItem("tokenCifra");
+				
+				    if (!myToken) {
+					        myToken = prompt("Informe seu token de acesso pessoal do GitHub:");
+					        if (!myToken) {
+						            alert("Token não informado.");
+						            exit() ;
+					        }
+					        localStorage.setItem('tokenCifra', myToken);
+				    }
+				
+				let autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+				
+				// Busca os arquivos .txt 
+				let myUrl = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
+				//				fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
+				
+				
+				
+				//		function loadSongList(){
+				fetch(myUrl, {
+					  headers: autHeaders
+				})
+				.then(response => response.json())
+				.then(files => {
+					const songList = document.getElementById('songList');
+					const txtViewer = document.getElementById('txtViewer');
+					files.forEach(file => {
+						if (file.name.endsWith('.txt')) {
+							const li = document.createElement('li');
+							li.className = 'list-group-item';
+							li.textContent = file.name;
+							
+							li.setAttribute('data-name', file.name);
+							
+							li.style.cursor = 'pointer';
+							li.onclick = () => {
+								
+								currentFile = file.name;
+								
+								fetch(file.download_url)
+								.then(res => res.text())
+								.then(texto => {
+									stopRollout();
+									const linhas = texto.split('\n');
+									const htmlFormatado = linhas.map((linha, index) => {
+										const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+										const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
+										const linhaTrim = linha.trim();
+										
+										// Verifica se há alguma palavra com mais de 5 letras
+										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
+										
+										// Monta notas musicais possiveis
+										const notasBase = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+										const sufixos = [
+										  '', 'm', '7', 'maj7', '7M', 'm7', 'mMaj7', 'dim', 'aug',
+										  'sus2', 'sus4', '6', 'm6', '9', 'maj9', 'm9', '11', '13',
+										  'add9', 'add11', 'add13', '7b5', '7#5', '7b9', '7#9',
+										  '13b9', '7sus4', '7sus2', '5', 'no3', 'no5', 'm7b5'
+										];
+										const baixos = ['', '/C', '/C#', '/Db', '/D', '/D#', '/Eb', '/E', '/F', '/F#', '/Gb', '/G', '/G#', '/Ab', '/A', '/A#', '/Bb', '/B'];
+										const acordesValidos = [];
+										
+										notasBase.forEach(nota => {
+											  sufixos.forEach(sufixo => {
+												    baixos.forEach(baixo => {
+													      acordesValidos.push(nota + sufixo + baixo);
+												    });
+											  });
+										});
+										
+										const palavras = linhaTrim
+										.replace(/[()\[\],]/g, '') // remove parênteses, colchetes e vírgulas
+										.split(/\s+/);
+										const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValidos.includes(p));
+										
+										if (index === 0) {
+											return `<h5>${linhaComEspacos}</h5>`;
+											
+											} else if (isLinhaDeAcordes) {
+											
+											return `<strong class="corCifra">${linhaComEspacos}</strong>`;
+											} else {
+											return linhaComEspacos;
+										}
+										
+									}).join('<br>');
+									txtViewer.innerHTML = htmlFormatado;
+									txtViewer.scrollTop = 0;
+									document.getElementById('right-panel').scrollTop = 0;
+									
+									// Remove marcador de todos os itens e deixa em negrito o clicado
+									document.querySelectorAll('#songList li').forEach(el => {
+										  el.innerHTML = el.textContent; // remove qualquer HTML anterior
+									});
+									li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
+									
+									// Inicia o rollout
+									startRollout();
+									
+								})
+								.catch(err => {
+									txtViewer.textContent = "Erro ao carregar o arquivo.";
+									console.error(err);
+								});
+							};
+							songList.appendChild(li);
+						}
+					});
+				})
+				.catch(error => {
+					console.error("Erro ao acessar a API do GitHub:", error);
+					document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
+				});
+				
+				// **********************************************
+				// Função para carregar comandos 
+				// **********************************************
+				/*
+					function readLocalStorage() {
+					
+					let stored;
+					stored = localStorage.getItem('autoStartTime');
+					autoStartTime = stored !== null ? Number(stored) : 5;
+					stored = localStorage.getItem('autoStartVoiceTime');
+					autoStartVoiceTime = stored !== null ? Number(stored) : 5;
+					voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
+					const showModal = localStorage.getItem('showVoiceCommandModal');
+					showVoiceCommandModal = showModal === null ? true : showModal === 'true';
+					isDarkMode = localStorage.getItem('darkMode') === 'true';
+					}
+				*/				
+				// **********************************************
+				// Função para carregar comandos no modal
+				// **********************************************
+				function loadComandos() {
+					//voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento'; 
+					
+					comandos = [
+					  [`${voiceCommandWord} iniciar`, "Iniciar a rolagem", "btnIniciar"],
+					  [`${voiceCommandWord} pausar`, "Pausar a rolagem", "btnPausar"],
+					  [`${voiceCommandWord} continuar`, "Continuar a rolagem", "btnContinuar"],
+					  [`${voiceCommandWord} parar`, "Parar a rolagem", "btnParar"],
+					  [`${voiceCommandWord} devagar`, "Deixar a rolagem mais lenta", "btnDevagar"],
+					  [`${voiceCommandWord} rápido`, "Deixar a rolagem mais rápida", "btnRapido"],
+					  [`${voiceCommandWord} menor`, "Diminuir o tamanho da fonte", "btnMenor"],
+					  [`${voiceCommandWord} maior`, "Aumentar o tamanho da fonte", "btnMaior"],
+					  [`${voiceCommandWord} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""]
+					];
+					
+					const tbody = document.getElementById("tabComandos");
+					tbody.innerHTML = "";
+					    comandos.forEach(([comando, descricao, botao]) => {
+						      const tr = document.createElement("tr");
+						      tr.innerHTML = 
+						        `<td>${comando}</td><td>${descricao}</td>`;
+						      tbody.appendChild(tr);
+					    });
+				}
+				
+				// **********************************************
+				// Começa a observar quando o DOM estiver pronto
+				// **********************************************
+				function showSong(id) {
+					document.querySelectorAll('.song-div').forEach(div => div.classList.remove('active'));
+					document.getElementById(id).classList.add('active');
+				}
+				
+				document.getElementById('search-filter').addEventListener('input', filterSongs);
+				
+				// **********************************************
+				// Filtra musica pelo nome
+				// **********************************************
+				function filterSongs() {
+					const search = document.getElementById('search-filter').value.toLowerCase();
+					document.querySelectorAll('#songList li').forEach(item => {
+						const matchesSearch = !search || item.textContent.toLowerCase().includes(search);
+						item.style.display = matchesSearch ? '' : 'none';
+					});
+				}
+				
+				// **********************************************
+				//	Inicia o rollout 
+				// **********************************************
+				function startRollout(resetToTop = false) {
+					
+					// Verifica o tempo de espera para iniciar 
+					let waitTime;
+					// Se comando de voz ligado
+					if (recognition) {
+						waitTime = autoStartVoiceTime * 1000;
+						} else {
+						waitTime = autoStartTime * 1000;
+					}
+					// Espera o tempo determinado
+					if (waitTime > 0) {	
+						setTimeout(() => {
+							  executeRollout(resetToTop);
+						}, waitTime); 
+					}				
+				}
+				
+				// **********************************************
+				//	Inicia o rollout 
+				// **********************************************
+				function executeRollout(resetToTop = false) {
+					
+					const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;     
+					const panel = document.getElementById('txtViewer');
+					
+					if (resetToTop) {
+						panel.scrollTop = 0;
+						document.getElementById('txtViewer').scrollTop = 0;
+					}
+					
+					scrollHeight = panel.scrollHeight - panel.clientHeight;
+					step = scrollHeight / (seconds / 100);
+					scrolled = panel.scrollTop;
+					isPaused = false;
+					
+					clearInterval(rolloutInterval);
+					
+					rolloutInterval = setInterval(() => {
+						if (scrolled >= scrollHeight || isPaused) {
+							clearInterval(rolloutInterval);
+							} else {
+							panel.scrollTop += step;
+							scrolled += step;
+						}
+					}, 100);
+				}
+				
+				// **********************************************
+				// Pausa o rollout
+				// **********************************************
+				function pauseRollout() {
+					isPaused = true;
+				}
+				
+				// **********************************************
+				// Continua o rollout
+				// **********************************************
+				function continueRollout() {
+					
+					if (!isPaused) return;
+					isPaused = false;
+					const panel = document.getElementById('txtViewer');
+					rolloutInterval = setInterval(() => {
+						if (scrolled >= scrollHeight || isPaused) {
+							clearInterval(rolloutInterval);
+							} else {
+							panel.scrollTop += step;
+							scrolled += step;
+						}
+					}, 100);
+				}
+				
+				// **********************************************
+				// Para o rollout
+				// **********************************************
+				function stopRollout() {
+					clearInterval(rolloutInterval);
+					isPaused = false;
+				}
+				
+				// **********************************************
+				// Controlador do scroll  
+				// **********************************************
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							startRollout();
+							} else {
+							stopRollout();
+						}
+					});
+					}, {
+					root: document.getElementById('right-panel'),
+					threshold: 0.5 // Ajuste a sensibilidade da visibilidade
+				});
+				
+				// **********************************************
+				// Começa a observar quando o DOM estiver pronto
+				// **********************************************
+				window.addEventListener('DOMContentLoaded', () => {
+					const target = document.getElementById('txtViewer');
+					if (target) observer.observe(target);
+				});
+				
+				// **********************************************
+				// Controla o tempo de rolagem
+				// **********************************************
+				function adjustRolloutTime(delta) {
+					const input = document.getElementById('rollout-time');
+					let current = parseInt(input.value) || 0;
+					current += delta;
+					if (current < 5) current = 5; // tempo mínimo de rolagem
+					input.value = current;
+					
+					// Se já estiver rolando, reinicia com o novo tempo
+					if (rolloutInterval && !isPaused) {
+						stopRollout();
+						startRollout();
+					}
+				}
+				
+				// **********************************************
+				// Controla o tamanho da fonte
+				// **********************************************
+				function changeFontSize(increase = true) {
+					    const viewer = document.getElementById('txtViewer');
+					    if (!viewer) return;
+					
+					    const style = window.getComputedStyle(viewer, null).getPropertyValue('font-size');
+					    const currentSize = parseFloat(style);
+					    const newSize = increase ? currentSize + 2 : currentSize - 2;
+					
+					    viewer.style.fontSize = `${newSize}px`;
+				}
+				
+				// **********************************************
+				// Upload de arquivo
+				// **********************************************
+				async function uploadToGitHub() {
+					
+					//const token = prompt("Informe seu token de acesso pessoal do GitHub:");
+					if (!myToken) {
+						alert("Token não informado.");
+						return;
+					}
+					
+					const fileInput = document.getElementById('uploadFileGitHub');
+					
+					// Define o que fazer quando o usuário escolher o arquivo
+					fileInput.onchange = function () {
+						const file = fileInput.files[0];
+						if (!file) {
+							alert("Nenhum arquivo selecionado.");
+							return;
+						}
+						
+						const reader = new FileReader();
+						reader.onload = async function (e) {
+							const content = e.target.result;
+							const base64Content = btoa(unescape(encodeURIComponent(content)));
+							//							const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${file.name}`;
+							const url = myUrl + `${file.name}`;
+							const response = await fetch(url, {
+								method: "PUT",
+								headers: {
+									autHeaders,
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									message: "Upload via página web",
+									content: base64Content
+								})
+							});
+							
+							const result = await response.json();
+							if (response.ok) {
+								alert("Arquivo salvo com sucesso!");
+								} else {
+								alert("Erro: " + result.message);
+							}
+						};
+						reader.readAsText(file);
+					};
+					
+					// Abre o seletor de arquivos
+					fileInput.click();
+				}
+				
+				// **********************************************
+				// Habilita ou desabilita o comando de voz
+				// **********************************************
+				function toggleVoiceControl() {
+					if (!recognition) {
+						const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+						recognition = new SpeechRecognition();
+						recognition.lang = 'pt-BR';
+						recognition.continuous = true;
+						recognition.interimResults = false;
+						
+						recognition.onresult = function(event) {
+							for (let i = event.resultIndex; i < event.results.length; ++i) {
+								if (event.results[i].isFinal) {
+									const command = event.results[i][0].transcript.trim().toLowerCase();
+									processVoiceCommand(command);
+								}
+							}
+						};
+						
+						recognition.onerror = function(event) {
+							console.error('Erro no reconhecimento de voz:', event.error);
+						};
+						
+						recognition.onend = function() {
+							    if (recognizing) {
+								        recognition.start(); // Reinicia automaticamente
+							    }
+						};
+					}
+					
+					if (recognizing) {
+						recognition.stop();
+						recognizing = false;
+						document.getElementById('btnVoice').classList.remove('btn-success');
+						document.getElementById('btnVoice').classList.add('btn-outline-secondary');
+						} else {
+						recognition.start();
+						recognizing = true;
+						document.getElementById('btnVoice').classList.remove('btn-outline-secondary');
+						document.getElementById('btnVoice').classList.add('btn-success');
+						
+						if (showVoiceCommandModal) {
+							abrirModalComandos();
+						}
+					}
+				}
+				
+				// **********************************************
+				// Executa o comando de voz
+				// **********************************************
+				function processVoiceCommand(command) {
+					
+					    comandos.forEach(([comando, descricao, botao]) => {
+						
+						if (command === comando) {
+							document.getElementById(botao).click();
+							return;
+						}
+					    });
+					
+					if (command.startsWith(`${voiceCommandWord} tocar`)) {
+						const songName = command.replace(`${voiceCommandWord} tocar`, '').trim();
+						const items = document.querySelectorAll('#songList li');
+						for (const item of items) {
+							if (item.textContent.toLowerCase().includes(songName)) {
+								item.click();
+								setTimeout(() => document.getElementById('btnIniciar').click(), 3000);
+								break;
+							}
+						}
+					}
+				}
+				
+				// **********************************************
+				// Abre a janela modal de comandos de voz 
+				// **********************************************
+				function abrirModalComandos() { 
+					  if (!showVoiceCommandModal) return;
+					
+					loadComandos();
+					  const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+					  modal.show();
+					
+					  const checkbox = document.getElementById('naoMostrarNovamente');
+					  checkbox.checked = false;
+					
+					  checkbox.addEventListener('change', () => {
+						    showVoiceCommandModal = checkbox.checked;
+					});
+				}
+				
+				// **********************************************
+				// Carrega campos da modal de configurações 
+				// **********************************************
+				function carregarConfig() { 
+					document.getElementById('autoStartTime').value = autoStartTime;
+					document.getElementById('autoStartVoiceTime').value = autoStartVoiceTime;
+					document.getElementById('voiceCommandWord').value = voiceCommandWord;
+					document.getElementById('showVoiceCommandModal').checked = showVoiceCommandModal;
+					document.getElementById('darkModeToggle').checked = isDarkMode; 
+				}
+				
+				// **********************************************
+				// Esconde o controle de voz se browser incompativel
+				// **********************************************
+				document.addEventListener('DOMContentLoaded', function () {
+					// Verifica suporte ao reconhecimento de voz
+					const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+					if (!SpeechRecognition) {
+						const btnVoice = document.getElementById('btnVoice');
+						if (btnVoice) {
+							btnVoice.style.display = 'none';
+						}
+					}
+					
+					// Le as variaveis de storage local 
+					//readLocalStorage();
+					
+					
+					
+					// Aplicar modo escuro
+					//					if (isDarkMode === 'true' || isDarkMode === true) {
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					document.getElementById('darkModeToggle').addEventListener('change', function () {
+						isDarkMode = this.checked;
+						if (this.checked) {
+							document.body.classList.add('dark-mode');
+							} else {
+							document.body.classList.remove('dark-mode');
+						}
+					});
+					
+					// Salvar configurações no localStorage
+					document.getElementById('saveConfigButton').addEventListener('click', async function () {
+						autoStartTime = document.getElementById('autoStartTime').value;
+						autoStartVoiceTime = document.getElementById('autoStartVoiceTime').value;
+						voiceCommandWord = document.getElementById('voiceCommandWord').value;
+						showVoiceCommandModal = document.getElementById('showVoiceCommandModal').checked;
+						isDarkMode = document.getElementById('darkModeToggle').checked;
+						
+						// Atualiza o objeto globalConfigs
+						globalConfigs = {
+							autoStartTime: autoStartTime,
+							autoStartVoiceTime: autoStartVoiceTime,
+							voiceCommandWord: voiceCommandWord,
+							showVoiceCommandModal: showVoiceCommandModal,
+							darkMode: isDarkMode
+						};
+						
+						// Fecha o modal
+						var modalElement = document.getElementById("configModal");
+						var modalInstance = bootstrap.Modal.getInstance(modalElement);
+						modalInstance.hide();
+						
+						// Exporta para o GitHub
+						await savePlaylistGithub("Configuração");
+						
+					});
+					
+					
+					// Aplicar configurações ao comportamento de rolagem e voz
+					function startRollout() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem
+						}, autoStartTime);
+					}
+					
+					function startRolloutByVoice() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem por voz
+						}, autoStartVoiceTime);
+					}
+					
+					// Substituir a palavra de comando de voz
+					if (typeof recognition !== 'undefined') {
+						recognition.onresult = function (event) {
+							const transcript = event.results[0][0].transcript.trim().toLowerCase();
+							if (transcript === voiceCommandWord) {
+								startRolloutByVoice();
+							}
+						};
+					}
+					
+					// Carrega o Select de Playlists 
+					//loadSelectPlaylists();
+				});
+				
+				// **********************************************
+				// Salva as edições de cifra de uma musica 
+				// **********************************************
+				async function saveChanges() {
+					//let tokenCifra = localStorage.getItem("tokenCifra");
+					
+					if (!myToken) {
+						alert("Token não informado.");
+						return;
+					}
+					
+					const content = document.getElementById('editArea').value;
+					const base64Content = btoa(unescape(encodeURIComponent(content)));
+					//					const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${currentFile}`;
+					const url = myUrl + `${currentFile}`;
+					
+					// Primeiro, obter o SHA atual do arquivo
+					let sha;
+					try {
+						const getResponse = await fetch(url, {
+							headers: {
+								autHeaders,
+								"Accept": "application/vnd.github.v3+json"
+							}
+						});
+						
+						if (getResponse.ok) {
+							const fileData = await getResponse.json();
+							sha = fileData.sha;
+						}
+						} catch (error) {
+						console.error("Erro ao obter SHA:", error);
+						alert("Erro ao obter informações do arquivo.");
+						return;
+					}
+					
+					// Agora, fazer o PUT com o SHA (se existir)
+					const putBody = {
+						message: "Alterações via página web",
+						content: base64Content
+					};
+					
+					if (sha) {
+						putBody.sha = sha;
+					}
+					
+					const response = await fetch(url, {
+						method: "PUT",
+						headers: {
+							autHeaders,
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(putBody)
+					});
+					
+					const result = await response.json();
+					if (response.ok) {
+						alert("Alterações salvas com sucesso! Aguarde uns minutos para recarregar.");
+						document.getElementById('txtViewer').innerText = content;
+						} else {
+						alert("Erro: " + result.message);
+					}
+				}
+				
+				// **********************************************
+				// Adiciona um evento ao botão editButton para carregar o conteúdo de txtViewer em editArea
+				// **********************************************
+				document.getElementById('editButton').addEventListener('click', function () {
+					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
+				});
+				
+			</script>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		</div>
+		<script>
+			// **********************************************
+			// Carrega as musicas da playlista selecionada
+			// **********************************************
+
+function loadSelectPlaylists() {
+const select = document.getElementById('playlistSelect');
+select.innerHTML = '<option value="">Todas as músicas</option>';
+
+// Usa diretamente a variável globalPlaylists
+const playlists = globalPlaylists; 
+
+for (let name in playlists) {
+const option = document.createElement('option');
+option.value = name;
+option.textContent = name;
+select.appendChild(option);
+}
+}
+
+			
+			// **********************************************
+			// Abre a janela modal de playlist
+			// **********************************************
+			function openModalPlaylist(bolCreate) {
+				const modalElement = document.getElementById("playlistModal");
+				const modal = new bootstrap.Modal(modalElement);
+				
+				if (bolCreate) {
+					const nomePlaylist = prompt("Digite o nome da nova playlist:");
+					if (nomePlaylist && nomePlaylist.trim() !== "") {
+						// Aqui você pode armazenar o nome da playlist se necessário
+						document.getElementById("playlistTitle").innerText = nomePlaylist.trim();
+						loadPlaylistModal();
+						modal.show();
+						} else {
+						alert("Nome da playlist não pode ser vazio.");
+					}
+					} else {
+					const playlistSelect = document.getElementById("playlistSelect");
+					if (!playlistSelect || !playlistSelect.value) {
+						alert("Por favor, selecione uma playlist.");
+						} else {
+						document.getElementById("playlistTitle").innerText = playlistSelect.value;
+						loadPlaylistModal();
+						modal.show();
+					}
+				}
+			}
+			
+			// **********************************************
+			// Funcao para tratar acentos 
+			// **********************************************
+			function cleanString(str) {
+				return str
+				.replace(/[\u200B-\u200D\uFEFF]/g, '') // remove caracteres invisíveis
+				.trim()
+				.normalize('NFC');
+			}
+			
+			// **********************************************
+			// Listener do select de playlists 
+			// **********************************************
+			document.getElementById('playlistSelect').addEventListener('change', function () {
+				const selectedPlaylist = this.value;
+				
+				const playlists = globalPlaylists;     
+				const songList = document.getElementById('songList');
+				const allItems = songList.querySelectorAll('li');
+				
+				if (!selectedPlaylist) {
+					allItems.forEach(item => item.style.display = '');
+					} else {
+					const songsInPlaylist = playlists[selectedPlaylist] || [];
+					
+					allItems.forEach(item => {
+						const itemName = cleanString(item.textContent);
+						const match = songsInPlaylist.some(name =>
+						cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
+						);
+						item.style.display = match ? '' : 'none';
+					});
+				}
+			});
+			
+			
+			// **********************************************
+			// Carrega playlist no modal 
+			// **********************************************
+			async function loadPlaylistModal() {
+				const songListItems = document.querySelectorAll('#songList li');
+				const songCheckboxList = document.getElementById('songCheckboxList');
+				songCheckboxList.innerHTML = '';
+				
+				const playlists = globalPlaylists;
+				const currentPlaylist = document.getElementById('playlistTitle').innerText.trim();
+				const selectedSongs = (playlists[currentPlaylist] || []).map(cleanString);
+				
+				songListItems.forEach(item => {
+					const id = cleanString(item.getAttribute('data-name'));
+					const div = document.createElement('div');
+					div.className = 'form-check';
+					
+					const checkbox = document.createElement('input');
+					checkbox.type = 'checkbox';
+					checkbox.className = 'form-check-input songCheckbox';
+					checkbox.id = 'chk_' + id;
+					checkbox.value = id;
+					checkbox.checked = selectedSongs.includes(id);
+					
+					const label = document.createElement('label');
+					label.className = 'form-check-label';
+					label.htmlFor = checkbox.id;
+					label.textContent = item.getAttribute('data-name');
+					
+					div.appendChild(checkbox);
+					div.appendChild(label);
+					songCheckboxList.appendChild(div);
+				});
+			}
+			
+			
+			
+		</script></body>
+</html>
