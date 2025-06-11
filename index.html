@@ -123,6 +123,7 @@
 			
 			let globalPlaylists = null;
 			let globalConfigs = null;
+			let globalRollouts = null;
 			let playlistsSha = null;
 			
 			// ************************************
@@ -143,7 +144,8 @@
 				const parsedData = JSON.parse(decodedContent);
 				
 				globalPlaylists = parsedData.playlists;          
-				globalConfigs = parsedData.configuracoes;        
+				globalConfigs = parsedData.configuracoes;
+				globalRollouts = parsedData.rollouts
 				
 				autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
 				autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
@@ -152,14 +154,13 @@
 				// Conversão segura de string para booleano
 				showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
 				isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
-
-
-// Aplica o modo escuro aqui
-if (isDarkMode) {
-document.body.classList.add('dark-mode');
-document.getElementById('darkModeToggle').checked = true;
-}
-
+				
+				// Aplica o modo escuro aqui
+				if (isDarkMode) {
+					document.body.classList.add('dark-mode');
+					document.getElementById('darkModeToggle').checked = true;
+				}
+				
 				// Carrega os campos do modal de configurações 
 				carregarConfig();	
 				// Carrega select de Playlists
@@ -178,11 +179,12 @@ document.getElementById('darkModeToggle').checked = true;
 				
 				const fullData = {
 					playlists: globalPlaylists,
-					configuracoes: globalConfigs
+					configuracoes: globalConfigs,
+					rollouts: globalRollouts
 				};
-
+				
 				const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
-
+				
 				const putResponse = await fetch(myUrl + 'playlists.json', {
 					method: 'PUT',
 					headers: autHeaders,
@@ -291,21 +293,28 @@ document.getElementById('darkModeToggle').checked = true;
 					<!-- Botões de controle -->
 					<div id="divControle">
 						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
-						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90">
+						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90"/>
 						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
-						<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
-						<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
-						<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
-						<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
-						<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
-						<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
-						<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
-						<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
-						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-upload"></i></button>
+						<div class="btn-group" role="group" aria-label="Controles de execução">
+							<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true,true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
+							<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+						</div>
+						<div class="btn-group" role="group" aria-label="Controles de rollout">
+							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+							<button class="btn btn-outline-secondary" id="btnSalvarTempo" onclick="saveMusicRollout()" title="Salvar tempo de rolagem"><i class="bi bi-stopwatch"></i></button>
+						</div>
+						<div class="btn-group" role="group" aria-label="Controles de fonte">
+							<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
+							<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
+						</div>
+						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-file-earmark-arrow-up"></i></button>
 						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
 						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
 						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton"><i class="bi bi-pencil-fill"></i></button>
-					</input></div>
+					</div>
 					<!-- Rolagem de telas -->
 					<div id="divRolagem">
 						<!-- Conteudo do arquivo -->
@@ -313,7 +322,9 @@ document.getElementById('darkModeToggle').checked = true;
 					</div>
 				</div>
 			</div>
+			<!-- ----------------------------------------------- -->
 			<!-- Modal para exibir mapeamento de comandos -->
+			<!-- ----------------------------------------------- -->
 			<div aria-hidden="true" aria-labelledby="voiceCommandModalLabel" class="modal fade" id="voiceCommandModal" tabindex="-1">
 				<div class="modal-dialog">
 					<div class="modal-content">
@@ -342,7 +353,9 @@ document.getElementById('darkModeToggle').checked = true;
 					</div>
 				</div>
 			</div>
+			<!-- ----------------------------------------------- -->
 			<!-- Modal de configuracoes -->
+			<!-- ----------------------------------------------- -->
 			<div aria-hidden="true" aria-labelledby="configModalLabel" class="modal fade" id="configModal" tabindex="-1">
 				<div class="modal-dialog">
 					<div class="modal-content">
@@ -383,7 +396,9 @@ document.getElementById('darkModeToggle').checked = true;
 					</div>
 				</div>
 			</div>
+			<!-- ----------------------------------------------- -->
 			<!-- Modal de edição -->
+			<!-- ----------------------------------------------- -->
 			<div aria-hidden="true" aria-labelledby="editModalLabel" class="modal fade" id="editModal" tabindex="-1">
 				<div class="modal-dialog modal-lg">
 					<div class="modal-content">
@@ -401,7 +416,9 @@ document.getElementById('darkModeToggle').checked = true;
 					</div>
 				</div>
 			</div>
+			<!-- ----------------------------------------------- -->
 			<!-- Modal de Listas de Músicas -->
+			<!-- ----------------------------------------------- -->
 			<div aria-hidden="true" aria-labelledby="playlistModalLabel" class="modal fade" id="playlistModal" tabindex="-1">
 				<div class="modal-dialog modal-lg">
 					<div class="modal-content">
@@ -425,8 +442,10 @@ document.getElementById('darkModeToggle').checked = true;
 					</div>
 				</div>
 			</div>
+
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+			
 			<script>
-				
 				
 				// Obtem token do github se existir 
 				let myToken = localStorage.getItem("tokenCifra");
@@ -444,11 +463,6 @@ document.getElementById('darkModeToggle').checked = true;
 				
 				// Busca os arquivos .txt 
 				let myUrl = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
-				//				fetch(`https://api.github.com/repos/${usuario}/${repositorio}/contents/`, {
-				
-				
-				
-				//		function loadSongList(){
 				fetch(myUrl, {
 					  headers: autHeaders
 				})
@@ -521,6 +535,18 @@ document.getElementById('darkModeToggle').checked = true;
 									txtViewer.scrollTop = 0;
 									document.getElementById('right-panel').scrollTop = 0;
 									
+									// Define tempo de rollout com base no JSON ou calcula automaticamente
+									const tempoSalvo = globalRollouts?.[currentFile];
+									//const linhas = texto.split('\n');
+									
+									if (tempoSalvo) {
+										  document.getElementById('rollout-time').value = tempoSalvo;
+										} else {
+										  const linhasReais = Math.ceil(linhas.length / 3); // Cada 3 linhas representam 1 linha real
+										  const tempoEstimado = linhasReais * 3; // 3 segundos por linha real
+										  document.getElementById('rollout-time').value = tempoEstimado;
+									}
+									
 									// Remove marcador de todos os itens e deixa em negrito o clicado
 									document.querySelectorAll('#songList li').forEach(el => {
 										  el.innerHTML = el.textContent; // remove qualquer HTML anterior
@@ -528,7 +554,7 @@ document.getElementById('darkModeToggle').checked = true;
 									li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
 									
 									// Inicia o rollout
-									startRollout();
+									startRollout(true,true);
 									
 								})
 								.catch(err => {
@@ -546,23 +572,6 @@ document.getElementById('darkModeToggle').checked = true;
 				});
 				
 				// **********************************************
-				// Função para carregar comandos 
-				// **********************************************
-				/*
-					function readLocalStorage() {
-					
-					let stored;
-					stored = localStorage.getItem('autoStartTime');
-					autoStartTime = stored !== null ? Number(stored) : 5;
-					stored = localStorage.getItem('autoStartVoiceTime');
-					autoStartVoiceTime = stored !== null ? Number(stored) : 5;
-					voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento';
-					const showModal = localStorage.getItem('showVoiceCommandModal');
-					showVoiceCommandModal = showModal === null ? true : showModal === 'true';
-					isDarkMode = localStorage.getItem('darkMode') === 'true';
-					}
-				*/				
-				// **********************************************
 				// Função para carregar comandos no modal
 				// **********************************************
 				function loadComandos() {
@@ -577,7 +586,8 @@ document.getElementById('darkModeToggle').checked = true;
 					  [`${voiceCommandWord} rápido`, "Deixar a rolagem mais rápida", "btnRapido"],
 					  [`${voiceCommandWord} menor`, "Diminuir o tamanho da fonte", "btnMenor"],
 					  [`${voiceCommandWord} maior`, "Aumentar o tamanho da fonte", "btnMaior"],
-					  [`${voiceCommandWord} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""]
+					  [`${voiceCommandWord} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""],
+					[`${voiceCommandWord} salvar tempo`, "Salvar tempo de rolagem da música atual", "btnSalvarTempo"]
 					];
 					
 					const tbody = document.getElementById("tabComandos");
@@ -614,22 +624,17 @@ document.getElementById('darkModeToggle').checked = true;
 				// **********************************************
 				//	Inicia o rollout 
 				// **********************************************
-				function startRollout(resetToTop = false) {
-					
-					// Verifica o tempo de espera para iniciar 
-					let waitTime;
-					// Se comando de voz ligado
-					if (recognition) {
-						waitTime = autoStartVoiceTime * 1000;
-						} else {
-						waitTime = autoStartTime * 1000;
+				function startRollout(resetToTop = false, waitRollout = false) {
+					if (waitRollout) {
+						let waitTime = recognition ? autoStartVoiceTime * 1000 : autoStartTime * 1000;
+						if (waitTime > 0) {
+							setTimeout(() => {
+								executeRollout(resetToTop);
+							}, waitTime);
+							return;
+						}
 					}
-					// Espera o tempo determinado
-					if (waitTime > 0) {	
-						setTimeout(() => {
-							  executeRollout(resetToTop);
-						}, waitTime); 
-					}				
+					executeRollout(resetToTop);
 				}
 				
 				// **********************************************
@@ -907,7 +912,7 @@ document.getElementById('darkModeToggle').checked = true;
 				}
 				
 				// **********************************************
-				// Esconde o controle de voz se browser incompativel
+				// Carga após carregar a janela 
 				// **********************************************
 				document.addEventListener('DOMContentLoaded', function () {
 					// Verifica suporte ao reconhecimento de voz
@@ -966,7 +971,6 @@ document.getElementById('darkModeToggle').checked = true;
 						await savePlaylistGithub("Configuração");
 						
 					});
-					
 					
 					// Aplicar configurações ao comportamento de rolagem e voz
 					function startRollout() {
@@ -1066,131 +1070,147 @@ document.getElementById('darkModeToggle').checked = true;
 					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
 				});
 				
-			</script>
-			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-		</div>
-		<script>
-			// **********************************************
-			// Carrega as musicas da playlista selecionada
-			// **********************************************
-
-function loadSelectPlaylists() {
-const select = document.getElementById('playlistSelect');
-select.innerHTML = '<option value="">Todas as músicas</option>';
-
-// Usa diretamente a variável globalPlaylists
-const playlists = globalPlaylists; 
-
-for (let name in playlists) {
-const option = document.createElement('option');
-option.value = name;
-option.textContent = name;
-select.appendChild(option);
-}
-}
-
-			
-			// **********************************************
-			// Abre a janela modal de playlist
-			// **********************************************
-			function openModalPlaylist(bolCreate) {
-				const modalElement = document.getElementById("playlistModal");
-				const modal = new bootstrap.Modal(modalElement);
+				// **********************************************
+				// Carrega as musicas da playlista selecionada
+				// **********************************************
 				
-				if (bolCreate) {
-					const nomePlaylist = prompt("Digite o nome da nova playlist:");
-					if (nomePlaylist && nomePlaylist.trim() !== "") {
-						// Aqui você pode armazenar o nome da playlist se necessário
-						document.getElementById("playlistTitle").innerText = nomePlaylist.trim();
-						loadPlaylistModal();
-						modal.show();
-						} else {
-						alert("Nome da playlist não pode ser vazio.");
-					}
-					} else {
-					const playlistSelect = document.getElementById("playlistSelect");
-					if (!playlistSelect || !playlistSelect.value) {
-						alert("Por favor, selecione uma playlist.");
-						} else {
-						document.getElementById("playlistTitle").innerText = playlistSelect.value;
-						loadPlaylistModal();
-						modal.show();
+				function loadSelectPlaylists() {
+					const select = document.getElementById('playlistSelect');
+					select.innerHTML = '<option value="">Todas as músicas</option>';
+					
+					// Usa diretamente a variável globalPlaylists
+					const playlists = globalPlaylists; 
+					
+					for (let name in playlists) {
+						const option = document.createElement('option');
+						option.value = name;
+						option.textContent = name;
+						select.appendChild(option);
 					}
 				}
-			}
-			
-			// **********************************************
-			// Funcao para tratar acentos 
-			// **********************************************
-			function cleanString(str) {
-				return str
-				.replace(/[\u200B-\u200D\uFEFF]/g, '') // remove caracteres invisíveis
-				.trim()
-				.normalize('NFC');
-			}
-			
-			// **********************************************
-			// Listener do select de playlists 
-			// **********************************************
-			document.getElementById('playlistSelect').addEventListener('change', function () {
-				const selectedPlaylist = this.value;
 				
-				const playlists = globalPlaylists;     
-				const songList = document.getElementById('songList');
-				const allItems = songList.querySelectorAll('li');
 				
-				if (!selectedPlaylist) {
-					allItems.forEach(item => item.style.display = '');
-					} else {
-					const songsInPlaylist = playlists[selectedPlaylist] || [];
+				// **********************************************
+				// Abre a janela modal de playlist
+				// **********************************************
+				function openModalPlaylist(bolCreate) {
+					const modalElement = document.getElementById("playlistModal");
+					const modal = new bootstrap.Modal(modalElement);
 					
-					allItems.forEach(item => {
-						const itemName = cleanString(item.textContent);
-						const match = songsInPlaylist.some(name =>
-						cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
-						);
-						item.style.display = match ? '' : 'none';
+					if (bolCreate) {
+						const nomePlaylist = prompt("Digite o nome da nova playlist:");
+						if (nomePlaylist && nomePlaylist.trim() !== "") {
+							// Aqui você pode armazenar o nome da playlist se necessário
+							document.getElementById("playlistTitle").innerText = nomePlaylist.trim();
+							loadPlaylistModal();
+							modal.show();
+							} else {
+							alert("Nome da playlist não pode ser vazio.");
+						}
+						} else {
+						const playlistSelect = document.getElementById("playlistSelect");
+						if (!playlistSelect || !playlistSelect.value) {
+							alert("Por favor, selecione uma playlist.");
+							} else {
+							document.getElementById("playlistTitle").innerText = playlistSelect.value;
+							loadPlaylistModal();
+							modal.show();
+						}
+					}
+				}
+				
+				// **********************************************
+				// Funcao para tratar acentos 
+				// **********************************************
+				function cleanString(str) {
+					return str
+					.replace(/[\u200B-\u200D\uFEFF]/g, '') // remove caracteres invisíveis
+					.trim()
+					.normalize('NFC');
+				}
+				
+				// **********************************************
+				// Funcao para tratar acentos 
+				// **********************************************
+				async function saveMusicRollout() {
+					if (!currentFile) {
+						alert("Nenhuma música carregada.");
+						return;
+					}
+					
+					const tempo = parseInt(document.getElementById('rollout-time').value);
+					if (isNaN(tempo) || tempo <= 0) {
+						alert("Tempo inválido.");
+						return;
+					}
+					
+					  if (!globalRollouts) globalRollouts = {}; // Garante que o objeto exista
+					  globalRollouts[currentFile] = tempo;
+					
+					await savePlaylistGithub("Tempo de rolagem");
+				}
+				
+				// **********************************************
+				// Listener do select de playlists 
+				// **********************************************
+				document.getElementById('playlistSelect').addEventListener('change', function () {
+					const selectedPlaylist = this.value;
+					
+					const playlists = globalPlaylists;     
+					const songList = document.getElementById('songList');
+					const allItems = songList.querySelectorAll('li');
+					
+					if (!selectedPlaylist) {
+						allItems.forEach(item => item.style.display = '');
+						} else {
+						const songsInPlaylist = playlists[selectedPlaylist] || [];
+						
+						allItems.forEach(item => {
+							const itemName = cleanString(item.textContent);
+							const match = songsInPlaylist.some(name =>
+							cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
+							);
+							item.style.display = match ? '' : 'none';
+						});
+					}
+				});
+				
+				
+				// **********************************************
+				// Carrega playlist no modal 
+				// **********************************************
+				async function loadPlaylistModal() {
+					const songListItems = document.querySelectorAll('#songList li');
+					const songCheckboxList = document.getElementById('songCheckboxList');
+					songCheckboxList.innerHTML = '';
+					
+					const playlists = globalPlaylists;
+					const currentPlaylist = document.getElementById('playlistTitle').innerText.trim();
+					const selectedSongs = (playlists[currentPlaylist] || []).map(cleanString);
+					
+					songListItems.forEach(item => {
+						const id = cleanString(item.getAttribute('data-name'));
+						const div = document.createElement('div');
+						div.className = 'form-check';
+						
+						const checkbox = document.createElement('input');
+						checkbox.type = 'checkbox';
+						checkbox.className = 'form-check-input songCheckbox';
+						checkbox.id = 'chk_' + id;
+						checkbox.value = id;
+						checkbox.checked = selectedSongs.includes(id);
+						
+						const label = document.createElement('label');
+						label.className = 'form-check-label';
+						label.htmlFor = checkbox.id;
+						label.textContent = item.getAttribute('data-name');
+						
+						div.appendChild(checkbox);
+						div.appendChild(label);
+						songCheckboxList.appendChild(div);
 					});
 				}
-			});
-			
-			
-			// **********************************************
-			// Carrega playlist no modal 
-			// **********************************************
-			async function loadPlaylistModal() {
-				const songListItems = document.querySelectorAll('#songList li');
-				const songCheckboxList = document.getElementById('songCheckboxList');
-				songCheckboxList.innerHTML = '';
-				
-				const playlists = globalPlaylists;
-				const currentPlaylist = document.getElementById('playlistTitle').innerText.trim();
-				const selectedSongs = (playlists[currentPlaylist] || []).map(cleanString);
-				
-				songListItems.forEach(item => {
-					const id = cleanString(item.getAttribute('data-name'));
-					const div = document.createElement('div');
-					div.className = 'form-check';
-					
-					const checkbox = document.createElement('input');
-					checkbox.type = 'checkbox';
-					checkbox.className = 'form-check-input songCheckbox';
-					checkbox.id = 'chk_' + id;
-					checkbox.value = id;
-					checkbox.checked = selectedSongs.includes(id);
-					
-					const label = document.createElement('label');
-					label.className = 'form-check-label';
-					label.htmlFor = checkbox.id;
-					label.textContent = item.getAttribute('data-name');
-					
-					div.appendChild(checkbox);
-					div.appendChild(label);
-					songCheckboxList.appendChild(div);
-				});
-			}
-			
-			
-			
-		</script></body>
+			</script>			
+		</div>
+	</body>
 </html>
