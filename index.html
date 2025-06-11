@@ -172,8 +172,8 @@
 			// Salva playlists e config no github
 			// ************************************
 			async function savePlaylistGithub(tipo) {
-				if (!myToken || !playlistsSha || !globalPlaylists) {
-					alert("Token, SHA ou dados não disponíveis para salvar no Github.");
+				if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
+					alert("Token ou SHA não disponíveis para salvar no Github.");
 					return;
 				}
 				
@@ -196,7 +196,7 @@
 				});
 				
 				if (!putResponse.ok) {
-					alert('Erro ao salvar a ' + tipo + ' no Github.');
+					alert('Erro ao salvar ' + tipo + ' no Github.');
 					} else {
 					alert(tipo + ' exportada com sucesso');
 				}
@@ -293,7 +293,7 @@
 					<!-- Botões de controle -->
 					<div id="divControle">
 						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
-						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="90"/>
+						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="240"/>
 						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
 						<div class="btn-group" role="group" aria-label="Controles de execução">
 							<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true,true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
@@ -574,8 +574,8 @@
 									if (tempoSalvo) {
 										  document.getElementById('rollout-time').value = tempoSalvo;
 										} else {
-										  const linhasReais = Math.ceil(linhas.length / 3); // Cada 3 linhas representam 1 linha real
-										  const tempoEstimado = linhasReais * 3; // 3 segundos por linha real
+										  const linhasReais = Math.ceil(linhas.length / 2); // Cada 2 linhas representam 1 linha real
+										  const tempoEstimado = linhasReais * 4; // 4 segundos por linha real
 										  document.getElementById('rollout-time').value = tempoEstimado;
 									}
 									
