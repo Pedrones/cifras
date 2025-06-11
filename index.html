@@ -442,23 +442,55 @@
 					</div>
 				</div>
 			</div>
-
+			
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 			
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 			<script>
-				
-				// Obtem token do github se existir 
+				const tokenEncoded = "U2FsdGVkX1+dYyB3Cx6pbh4gz9Nh0446DTxLwkTjMx8zy7vx8MxKptdpurfd6SNFCvYyLj37VnrJXk5QarsmtQ==";
 				let myToken = localStorage.getItem("tokenCifra");
 				
-				    if (!myToken) {
-					        myToken = prompt("Informe seu token de acesso pessoal do GitHub:");
-					        if (!myToken) {
-						            alert("Token não informado.");
-						            exit() ;
-					        }
-					        localStorage.setItem('tokenCifra', myToken);
-				    }
+				async function solicitarSenha() {
+					while (true) {
+						const senha = prompt("Informe a senha para descriptografar o token:");
+						if (senha === null) {
+							alert("Senha não informada. Algumas funcionalidades podem não estar disponíveis.");
+							return null;
+						}
+						
+						try {
+							const bytes = CryptoJS.AES.decrypt(tokenEncoded, senha);
+							const token = bytes.toString(CryptoJS.enc.Utf8);
+							
+							if (token && token.startsWith("ghp_")) {
+								localStorage.setItem("tokenCifra", token);
+								return token;
+								} else {
+								alert("Senha incorreta. Por favor, tente novamente.");
+								localStorage.removeItem("tokenCifra");
+							}
+							} catch (e) {
+							alert("Erro ao tentar descriptografar. Tente novamente.");
+							localStorage.removeItem("tokenCifra");
+						}
+					}
+				}
 				
+				(async () => {
+					if (!myToken) {
+						myToken = await solicitarSenha();
+					}
+					
+					//const autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+					//console.log("Cabeçalhos de autenticação:", autHeaders);
+					
+					// Aqui você pode continuar com funcionalidades limitadas, se necessário
+				})();
+				
+				
+				
+				
+				// Cabeçalhos de autenticação
 				let autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
 				
 				// Busca os arquivos .txt 
