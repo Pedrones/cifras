@@ -95,137 +95,7 @@
 			
 		</style>
 		
-		<script>
-			// **********************************************
-			// Declaração de variáveis 
-			// **********************************************
-			const usuario = "pedrones";
-			const repositorio = "cifras";
-			const pasta = "cifras";
-			// Para localStorage
-			let autoStartTime;
-			let autoStartVoiceTime;
-			let voiceCommandWord;
-			let showVoiceCommandModal;
-			let isDarkMode;
-			// Para modal de comandos
-			let comandos = [];
-			// Controle de rollout
-			let rolloutInterval;
-			let isPaused = false;
-			let scrolled = 0;
-			let scrollHeight;
-			let step;
-			// Para controle de microfone
-			let recognition;
-			let recognizing = false;
-			let currentFile;
-			
-			let globalPlaylists = null;
-			let globalConfigs = null;
-			let globalRollouts = null;
-			let playlistsSha = null;
-			
-			// ************************************
-			// Lê playlists e config do GitHub
-			// ************************************
-			async function loadGlobalPlaylists() {
-				const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
-					headers: autHeaders
-				});
-				const data = await response.json();
-				playlistsSha = data.sha;
-				
-				// Decodificação correta em UTF-8
-				const binary = atob(data.content);
-				const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-				const decodedContent = new TextDecoder('utf-8').decode(bytes);     
-				
-				const parsedData = JSON.parse(decodedContent);
-				
-				globalPlaylists = parsedData.playlists;          
-				globalConfigs = parsedData.configuracoes;
-				globalRollouts = parsedData.rollouts
-				
-				autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
-				autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
-				voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
-				
-				// Conversão segura de string para booleano
-				showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
-				isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
-				
-				// Aplica o modo escuro aqui
-				if (isDarkMode) {
-					document.body.classList.add('dark-mode');
-					document.getElementById('darkModeToggle').checked = true;
-				}
-				
-				// Carrega os campos do modal de configurações 
-				carregarConfig();	
-				// Carrega select de Playlists
-				loadSelectPlaylists();
-			}
-			
-			
-			// ************************************
-			// Salva playlists e config no github
-			// ************************************
-			async function savePlaylistGithub(tipo) {
-				if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
-					alert("Token ou SHA não disponíveis para salvar no Github.");
-					return;
-				}
-				
-				const fullData = {
-					playlists: globalPlaylists,
-					configuracoes: globalConfigs,
-					rollouts: globalRollouts
-				};
-				
-				const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
-				
-				const putResponse = await fetch(myUrl + 'playlists.json', {
-					method: 'PUT',
-					headers: autHeaders,
-					body: JSON.stringify({
-						message: `Atualiza ${tipo} via variável global`,
-						content: encodedContent,
-						sha: playlistsSha
-					})
-				});
-				
-				if (!putResponse.ok) {
-					alert('Erro ao salvar ' + tipo + ' no Github.');
-					} else {
-					alert(tipo + ' exportada com sucesso');
-				}
-			}
-			
-			// ************************************
-			// Chama a carga da playlist ao carregar o documento
-			// ************************************
-			window.addEventListener('DOMContentLoaded', async () => {
-				await loadGlobalPlaylists();
-				// ... outras inicializações
-			});
-			
-			// ************************************
-			// Função para salvar a playlist na variavel
-			// ************************************
-			async function savePlaylistLocal() {
-				const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
-				const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
-				globalPlaylists[selectedPlaylist] = selectedSongs;  
-				document.getElementById("btnFechaPlaylist").click();
-				document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
-				//alert("Playlist atualizada na variável global.");
-				// Chamada assíncrona sem aguardar
-				await savePlaylistGithub('Playlist');
-				
-			}
-			
-		</script>
+
 	</head>
 	<body>
 		<div class="container-fluid">
@@ -470,9 +340,138 @@
 			
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-<script src="https://raw.githubusercontent.com/Pedrones/cifras/main/acordes.js"></script>
-	
-			<script>
+<script src="acordes.js"></script>
+		<script>
+			// **********************************************
+			// Declaração de variáveis 
+			// **********************************************
+			const usuario = "pedrones";
+			const repositorio = "cifras";
+			const pasta = "cifras";
+			// Para localStorage
+			let autoStartTime;
+			let autoStartVoiceTime;
+			let voiceCommandWord;
+			let showVoiceCommandModal;
+			let isDarkMode;
+			// Para modal de comandos
+			let comandos = [];
+			// Controle de rollout
+			let rolloutInterval;
+			let isPaused = false;
+			let scrolled = 0;
+			let scrollHeight;
+			let step;
+			// Para controle de microfone
+			let recognition;
+			let recognizing = false;
+			let currentFile;
+			
+			let globalPlaylists = null;
+			let globalConfigs = null;
+			let globalRollouts = null;
+			let playlistsSha = null;
+			
+			// ************************************
+			// Lê playlists e config do GitHub
+			// ************************************
+			async function loadGlobalPlaylists() {
+				const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
+					headers: autHeaders
+				});
+				const data = await response.json();
+				playlistsSha = data.sha;
+				
+				// Decodificação correta em UTF-8
+				const binary = atob(data.content);
+				const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+				const decodedContent = new TextDecoder('utf-8').decode(bytes);     
+				
+				const parsedData = JSON.parse(decodedContent);
+				
+				globalPlaylists = parsedData.playlists;          
+				globalConfigs = parsedData.configuracoes;
+				globalRollouts = parsedData.rollouts
+				
+				autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
+				autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
+				voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
+				
+				// Conversão segura de string para booleano
+				showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
+				isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
+				
+				// Aplica o modo escuro aqui
+				if (isDarkMode) {
+					document.body.classList.add('dark-mode');
+					document.getElementById('darkModeToggle').checked = true;
+				}
+				
+				// Carrega os campos do modal de configurações 
+				carregarConfig();	
+				// Carrega select de Playlists
+				loadSelectPlaylists();
+			}
+			
+			
+			// ************************************
+			// Salva playlists e config no github
+			// ************************************
+			async function savePlaylistGithub(tipo) {
+				if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
+					alert("Token ou SHA não disponíveis para salvar no Github.");
+					return;
+				}
+				
+				const fullData = {
+					playlists: globalPlaylists,
+					configuracoes: globalConfigs,
+					rollouts: globalRollouts
+				};
+				
+				const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
+				
+				const putResponse = await fetch(myUrl + 'playlists.json', {
+					method: 'PUT',
+					headers: autHeaders,
+					body: JSON.stringify({
+						message: `Atualiza ${tipo} via variável global`,
+						content: encodedContent,
+						sha: playlistsSha
+					})
+				});
+				
+				if (!putResponse.ok) {
+					alert('Erro ao salvar ' + tipo + ' no Github.');
+					} else {
+					alert(tipo + ' exportada com sucesso');
+				}
+			}
+			
+			// ************************************
+			// Chama a carga da playlist ao carregar o documento
+			// ************************************
+			window.addEventListener('DOMContentLoaded', async () => {
+				await loadGlobalPlaylists();
+				// ... outras inicializações
+			});
+			
+			// ************************************
+			// Função para salvar a playlist na variavel
+			// ************************************
+			async function savePlaylistLocal() {
+				const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
+				const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
+				globalPlaylists[selectedPlaylist] = selectedSongs;  
+				document.getElementById("btnFechaPlaylist").click();
+				document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
+				//alert("Playlist atualizada na variável global.");
+				// Chamada assíncrona sem aguardar
+				await savePlaylistGithub('Playlist');
+				
+			}
+			
+
 				const tokenEncoded = "U2FsdGVkX1+dYyB3Cx6pbh4gz9Nh0446DTxLwkTjMx8zy7vx8MxKptdpurfd6SNFCvYyLj37VnrJXk5QarsmtQ==";
 				let myToken = localStorage.getItem("tokenCifra");
 				
