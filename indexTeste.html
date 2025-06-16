@@ -1352,7 +1352,7 @@ function abrirModalCifras() {
   }
 
   window.acordesDaMusica.forEach(nota => {
-    const svg = gerarCifraSVG(nota, acordes, 0,6);
+    const svg = gerarCifraSVG(nota, acordes, 0.6);
     const div = document.createElement("div");
     div.innerHTML = `<h6>${nota}</h6>${svg}`;
     div.classList.add("mb-4");
