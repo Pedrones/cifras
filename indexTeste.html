@@ -1290,53 +1290,55 @@ window.acordesDaMusica = Array.from(acordesUnicos); // salva globalmente
 				
 				
 				
-       function gerarCifraSVG(nota, acordes) {
-            const acorde = acordes.find(a => a.Nome === nota && a.Dedos);
-            if (!acorde) {
-                return `<svg width="160" height="160"><text x="10" y="50">Cifra não encontrada</text></svg>`;
-            }
+function gerarCifraSVG(nota, acordes, escala = 1) {
+    const acorde = acordes.find(a => a.Nome === nota && a.Dedos);
+    if (!acorde) {
+        return `<svg width="160" height="160"><text x="10" y="50">Cifra não encontrada</text></svg>`;
+    }
 
-            const espacamento = 20;
-            const cordas = 6;
-            const casas = 5;
-            const largura = espacamento * (cordas - 1) + 2 * espacamento;
-            const altura = espacamento * casas + 2 * espacamento;
+    const espacamentoBase = 20;
+    const espacamento = espacamentoBase * escala;
+    const cordas = 6;
+    const casas = 5;
+    const largura = espacamento * (cordas - 1) + 2 * espacamento;
+    const altura = espacamento * casas + 2 * espacamento;
 
-            let svg = `<svg width="${largura}" height="${altura}" xmlns="http://www.w3.org/2000/svg">`;
+    let svg = `<svg width="${largura}" height="${altura}" xmlns="http://www.w3.org/2000/svg">`;
 
-            // Linhas verticais (cordas)
-            for (let i = 0; i < cordas; i++) {
-                const x = espacamento + i * espacamento;
-                svg += `<line x1="${x}" y1="${espacamento}" x2="${x}" y2="${espacamento * (casas + 1)}" stroke="black"/>`;
-            }
+    // Linhas verticais (cordas)
+    for (let i = 0; i < cordas; i++) {
+        const x = espacamento + i * espacamento;
+        svg += `<line x1="${x}" y1="${espacamento}" x2="${x}" y2="${espacamento * (casas + 1)}" stroke="black"/>`;
+    }
 
-            // Linha horizontal superior (mais grossa)
-            svg += `<line x1="${espacamento}" y1="${espacamento}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${espacamento}" stroke="black" stroke-width="4"/>`;
+    // Linha horizontal superior (mais grossa)
+    svg += `<line x1="${espacamento}" y1="${espacamento}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${espacamento}" stroke="black" stroke-width="${4 * escala}"/>`;
 
-            // Linhas horizontais (casas)
-            for (let i = 1; i <= casas; i++) {
-                const y = espacamento + i * espacamento;
-                svg += `<line x1="${espacamento}" y1="${y}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${y}" stroke="black"/>`;
-            }
+    // Linhas horizontais (casas)
+    for (let i = 1; i <= casas; i++) {
+        const y = espacamento + i * espacamento;
+        svg += `<line x1="${espacamento}" y1="${y}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${y}" stroke="black"/>`;
+    }
 
-            // Dedos
-            acorde.Dedos.forEach(dedo => {
-                const y = espacamento + (dedo.Casa - acorde.CasaInicial + 1) * espacamento - espacamento / 2;
+    // Dedos
+    acorde.Dedos.forEach(dedo => {
+        const y = espacamento + (dedo.Casa - acorde.CasaInicial + 1) * espacamento - espacamento / 2;
 
-                if (dedo.Pestana) {
-                    // Desenha uma pestana da 6ª à 1ª corda
-                    const xInicio = espacamento;
-                    const larguraPestana = espacamento * (cordas - 1);
-                    svg += `<rect x="${xInicio - 6}" y="${y - 6}" width="${larguraPestana + 12}" height="12" rx="4" fill="black"/>`;
-                } else {
-                    const x = espacamento + (6 - dedo.Corda) * espacamento;
-                    svg += `<circle cx="${x}" cy="${y}" r="6" fill="black"/>`;
-                }
-            });
-
-            svg += `</svg>`;
-            return svg;
+        if (dedo.Pestana) {
+            // Desenha uma pestana da 6ª à 1ª corda
+            const xInicio = espacamento;
+            const larguraPestana = espacamento * (cordas - 1);
+            svg += `<rect x="${xInicio - 6 * escala}" y="${y - 6 * escala}" width="${larguraPestana + 12 * escala}" height="${12 * escala}" rx="${4 * escala}" fill="black"/>`;
+        } else {
+            const x = espacamento + (6 - dedo.Corda) * espacamento;
+            svg += `<circle cx="${x}" cy="${y}" r="${6 * escala}" fill="black"/>`;
         }
+    });
+
+    svg += `</svg>`;
+    return svg;
+}
+
 
 
 
@@ -1350,7 +1352,7 @@ function abrirModalCifras() {
   }
 
   window.acordesDaMusica.forEach(nota => {
-    const svg = gerarCifraSVG(nota, acordes);
+    const svg = gerarCifraSVG(nota, acordes, 0,6);
     const div = document.createElement("div");
     div.innerHTML = `<h6>${nota}</h6>${svg}`;
     div.classList.add("mb-4");
