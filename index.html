@@ -93,139 +93,47 @@
 			    white-space: pre-wrap;
 			}
 			
+			
+			#cifraContainer {
+			  display: flex;
+			  flex-wrap: wrap;
+			  gap: 20px;
+			  width: 100%;
+			}
+			
+			#cifraContainer > div {
+			  flex: 1 1 calc(33.333% - 20px);
+			  box-sizing: border-box;
+			  min-width: 200px; /* evita colapsar em telas pequenas */
+			}
+			
+			.cifra-coluna {
+			  flex: 1 1 calc(33.333% - 20px);
+			}
+			
+			.modal-sidepanel {
+			position: fixed;
+			top: 5vw;
+			right: 0;
+			margin: 0;
+			height: 100vh;
+			width: 10vw;
+			max-width: none;
+			transform: translateX(100%);
+			transition: transform 0.3s ease-out;
+			}
+			
+			.modal.show .modal-sidepanel {
+			transform: translateX(0);
+			}
+			
+			.modal-backdrop {
+			display: none; /* opcional: remove o fundo escuro */
+			}
+			
 		</style>
 		
-		<script>
-			// **********************************************
-			// Declaração de variáveis 
-			// **********************************************
-			const usuario = "pedrones";
-			const repositorio = "cifras";
-			const pasta = "cifras";
-			// Para localStorage
-			let autoStartTime;
-			let autoStartVoiceTime;
-			let voiceCommandWord;
-			let showVoiceCommandModal;
-			let isDarkMode;
-			// Para modal de comandos
-			let comandos = [];
-			// Controle de rollout
-			let rolloutInterval;
-			let isPaused = false;
-			let scrolled = 0;
-			let scrollHeight;
-			let step;
-			// Para controle de microfone
-			let recognition;
-			let recognizing = false;
-			let currentFile;
-			
-			let globalPlaylists = null;
-			let globalConfigs = null;
-			let globalRollouts = null;
-			let playlistsSha = null;
-			
-			// ************************************
-			// Lê playlists e config do GitHub
-			// ************************************
-			async function loadGlobalPlaylists() {
-				const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
-					headers: autHeaders
-				});
-				const data = await response.json();
-				playlistsSha = data.sha;
-				
-				// Decodificação correta em UTF-8
-				const binary = atob(data.content);
-				const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-				const decodedContent = new TextDecoder('utf-8').decode(bytes);     
-				
-				const parsedData = JSON.parse(decodedContent);
-				
-				globalPlaylists = parsedData.playlists;          
-				globalConfigs = parsedData.configuracoes;
-				globalRollouts = parsedData.rollouts
-				
-				autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
-				autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
-				voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
-				
-				// Conversão segura de string para booleano
-				showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
-				isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
-				
-				// Aplica o modo escuro aqui
-				if (isDarkMode) {
-					document.body.classList.add('dark-mode');
-					document.getElementById('darkModeToggle').checked = true;
-				}
-				
-				// Carrega os campos do modal de configurações 
-				carregarConfig();	
-				// Carrega select de Playlists
-				loadSelectPlaylists();
-			}
-			
-			
-			// ************************************
-			// Salva playlists e config no github
-			// ************************************
-			async function savePlaylistGithub(tipo) {
-				if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
-					alert("Token ou SHA não disponíveis para salvar no Github.");
-					return;
-				}
-				
-				const fullData = {
-					playlists: globalPlaylists,
-					configuracoes: globalConfigs,
-					rollouts: globalRollouts
-				};
-				
-				const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
-				
-				const putResponse = await fetch(myUrl + 'playlists.json', {
-					method: 'PUT',
-					headers: autHeaders,
-					body: JSON.stringify({
-						message: `Atualiza ${tipo} via variável global`,
-						content: encodedContent,
-						sha: playlistsSha
-					})
-				});
-				
-				if (!putResponse.ok) {
-					alert('Erro ao salvar ' + tipo + ' no Github.');
-					} else {
-					alert(tipo + ' exportada com sucesso');
-				}
-			}
-			
-			// ************************************
-			// Chama a carga da playlist ao carregar o documento
-			// ************************************
-			window.addEventListener('DOMContentLoaded', async () => {
-				await loadGlobalPlaylists();
-				// ... outras inicializações
-			});
-			
-			// ************************************
-			// Função para salvar a playlist na variavel
-			// ************************************
-			async function savePlaylistLocal() {
-				const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
-				const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
-				globalPlaylists[selectedPlaylist] = selectedSongs;  
-				document.getElementById("btnFechaPlaylist").click();
-				document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
-				//alert("Playlist atualizada na variável global.");
-				// Chamada assíncrona sem aguardar
-				await savePlaylistGithub('Playlist');
-				
-			}
-			
-		</script>
+		
 	</head>
 	<body>
 		<div class="container-fluid">
@@ -314,6 +222,11 @@
 						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
 						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
 						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton"><i class="bi bi-pencil-fill"></i></button>
+						
+						<button class="btn btn-outline-secondary" onclick="abrirModalCifras()" title="Ver cifras"><i class="bi bi-music-note-list"></i></button>
+						<!--						
+							<button class="btn btn-outline-secondary" onclick="gerarJsonDeSelecaoComDedos()" title="Criar json cifra"><i class="bi bi-music-note-list"></i></button>
+						-->						
 					</div>
 					<!-- Rolagem de telas -->
 					<div id="divRolagem">
@@ -443,10 +356,164 @@
 				</div>
 			</div>
 			
+			
+			<!-- ----------------------------------------------- -->
+			<!-- Modal de Cifras -->
+			<!-- ----------------------------------------------- -->
+			<div class="modal fade" id="modCifra" tabindex="-1" aria-labelledby="modCifraLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-scrollable modal-sidepanel">
+					<div class="modal-content">
+						<!--
+							<div class="modal-header">
+							<h5 class="modal-title" id="modCifraLabel">Cifras da Música</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+							</div>
+						-->	
+						<div class="modal-body" id="cifraContainer">
+							<!-- SVGs das cifras serão inseridos aqui -->
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 			
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+			
+			<script src="acordes.js"></script>
 			<script>
+				// **********************************************
+				// Declaração de variáveis 
+				// **********************************************
+				const usuario = "pedrones";
+				const repositorio = "cifras";
+				const pasta = "cifras";
+				// Para localStorage
+				let autoStartTime;
+				let autoStartVoiceTime;
+				let voiceCommandWord;
+				let showVoiceCommandModal;
+				let isDarkMode;
+				// Para modal de comandos
+				let comandos = [];
+				// Controle de rollout
+				let rolloutInterval;
+				let isPaused = false;
+				let scrolled = 0;
+				let scrollHeight;
+				let step;
+				// Para controle de microfone
+				let recognition;
+				let recognizing = false;
+				let currentFile;
+				
+				let globalPlaylists = null;
+				let globalConfigs = null;
+				let globalRollouts = null;
+				let playlistsSha = null;
+				
+				// ************************************
+				// Lê playlists e config do GitHub
+				// ************************************
+				async function loadGlobalPlaylists() {
+					const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
+						headers: autHeaders
+					});
+					const data = await response.json();
+					playlistsSha = data.sha;
+					
+					// Decodificação correta em UTF-8
+					const binary = atob(data.content);
+					const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+					const decodedContent = new TextDecoder('utf-8').decode(bytes);     
+					
+					const parsedData = JSON.parse(decodedContent);
+					
+					globalPlaylists = parsedData.playlists;          
+					globalConfigs = parsedData.configuracoes;
+					globalRollouts = parsedData.rollouts
+					
+					autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
+					autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
+					voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
+					
+					// Conversão segura de string para booleano
+					showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
+					isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
+					
+					// Aplica o modo escuro aqui
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					// Carrega os campos do modal de configurações 
+					carregarConfig();	
+					// Carrega select de Playlists
+					loadSelectPlaylists();
+				}
+				
+				
+				// ************************************
+				// Salva playlists e config no github
+				// ************************************
+				async function savePlaylistGithub(tipo) {
+					if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
+						alert("Token ou SHA não disponíveis para salvar no Github.");
+						return;
+					}
+					
+					const fullData = {
+						playlists: globalPlaylists,
+						configuracoes: globalConfigs,
+						rollouts: globalRollouts
+					};
+					
+					const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
+					
+					const putResponse = await fetch(myUrl + 'playlists.json', {
+						method: 'PUT',
+						headers: autHeaders,
+						body: JSON.stringify({
+							message: `Atualiza ${tipo} via variável global`,
+							content: encodedContent,
+							sha: playlistsSha
+						})
+					});
+					
+					if (!putResponse.ok) {
+						alert('Erro ao salvar ' + tipo + ' no Github.');
+						} else {
+						alert(tipo + ' exportada com sucesso');
+					}
+				}
+				
+				// ************************************
+				// Chama a carga da playlist ao carregar o documento
+				// ************************************
+				window.addEventListener('DOMContentLoaded', async () => {
+					await loadGlobalPlaylists();
+					// ... outras inicializações
+				});
+				
+				// ************************************
+				// Função para salvar a playlist na variavel
+				// ************************************
+				async function savePlaylistLocal() {
+					const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
+					const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
+					globalPlaylists[selectedPlaylist] = selectedSongs;  
+					document.getElementById("btnFechaPlaylist").click();
+					document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
+					//alert("Playlist atualizada na variável global.");
+					// Chamada assíncrona sem aguardar
+					await savePlaylistGithub('Playlist');
+					
+				}
+				
+				
 				const tokenEncoded = "U2FsdGVkX1+dYyB3Cx6pbh4gz9Nh0446DTxLwkTjMx8zy7vx8MxKptdpurfd6SNFCvYyLj37VnrJXk5QarsmtQ==";
 				let myToken = localStorage.getItem("tokenCifra");
 				
@@ -566,6 +633,26 @@
 									txtViewer.innerHTML = htmlFormatado;
 									txtViewer.scrollTop = 0;
 									document.getElementById('right-panel').scrollTop = 0;
+									
+									
+									// Extrai acordes únicos da música
+									
+									const acordesValidos = acordes.map(a => a.Nome);
+									
+									const acordesUnicos = new Set();
+									linhas.forEach(linha => {
+										const palavras = linha.replace(/[()\[\],]/g, '').split(/\s+/);
+										palavras.forEach(palavra => {
+											if (acordesValidos.includes(palavra)) {
+												acordesUnicos.add(palavra);
+											}
+										});
+									});
+									window.acordesDaMusica = Array.from(acordesUnicos); // salva globalmente
+									
+									
+									
+									
 									
 									// Define tempo de rollout com base no JSON ou calcula automaticamente
 									const tempoSalvo = globalRollouts?.[currentFile];
@@ -1242,6 +1329,197 @@
 						songCheckboxList.appendChild(div);
 					});
 				}
+				
+				
+				// **********************************************
+				// Gera figura da cifra  
+				// **********************************************
+				function gerarCifraSVG(nota, acordes, escala = 1) {
+					let acorde = acordes.find(a => a.Nome === nota && a.Dedos);
+					
+				    if (!acorde) {
+						        
+						const linhas = document.getElementById("txtViewer").innerHTML
+						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
+						    .replace(/<br\s*\/?>/gi, '\n')        // converte <br> em \n
+						    .replace(/<\/?[^>]+(>|$)/g, "")       // remove tags HTML
+						    .split("\n")
+						    .map(l => l.trim());
+						const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));
+						
+				        if (indiceAcordes !== -1) {
+					            for (let i = indiceAcordes + 1; i < linhas.length; i++) {
+						                const linha = linhas[i].trim();
+						
+						                if (linha.startsWith(nota + " ")) {
+							                    const json = gerarJsonDeSelecaoComDedosFromLinha(linha);
+							                    if (json) {
+								                        acorde = json;
+								                        break;
+							                    }
+						                }
+					            }
+				        }
+				    }
+					
+					if (!acorde) {
+						return `<svg width="160" height="160"><text x="10" y="50">Cifra não encontrada</text></svg>`;
+					}
+					
+					const espacamentoBase = 20;
+					const espacamento = espacamentoBase * escala;
+					const cordas = 6;
+					const casas = 5;
+					const largura = espacamento * (cordas - 1) + 2 * espacamento;
+					const altura = espacamento * casas + 2 * espacamento;
+					
+					let svg = `<svg width="${largura}" height="${altura}" xmlns="http://www.w3.org/2000/svg">`;
+					
+					// Cordas usadas (X e O)
+					if (acorde.CordasUsadas) {
+						acorde.CordasUsadas.forEach((valor, i) => {
+							if (valor === "X" || valor === "0") {
+								const x = espacamento + i * espacamento;
+								svg += `<text x="${x}" y="${espacamento * 0.8}" font-size="${20 * escala}" text-anchor="middle">${valor}</text>`;
+							}
+						});
+					}
+					
+					// Linhas verticais (cordas)
+					for (let i = 0; i < cordas; i++) {
+						const x = espacamento + i * espacamento;
+						svg += `<line x1="${x}" y1="${espacamento}" x2="${x}" y2="${espacamento * (casas + 1)}" stroke="black"/>`;
+					}
+					
+					// Linha horizontal superior (mais grossa)
+					svg += `<line x1="${espacamento}" y1="${espacamento}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${espacamento}" stroke="black" stroke-width="${4 * escala}"/>`;
+					
+					// Linhas horizontais (casas)
+					for (let i = 1; i <= casas; i++) {
+						const y = espacamento + i * espacamento;
+						svg += `<line x1="${espacamento}" y1="${y}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${y}" stroke="black"/>`;
+					}
+					
+					// Dedos
+					acorde.Dedos.forEach(dedo => {
+						const y = espacamento + (dedo.Casa - acorde.CasaInicial + 1) * espacamento - espacamento / 2;
+						if (dedo.Pestana) {
+							const xInicio = espacamento;
+							const larguraPestana = espacamento * (cordas - 1);
+							svg += `<rect x="${xInicio - 6 * escala}" y="${y - 6 * escala}" width="${larguraPestana + 12 * escala}" height="${12 * escala}" rx="${4 * escala}" fill="black"/>`;
+							} else {
+							const x = espacamento + (6 - dedo.Corda) * espacamento;
+							svg += `<circle cx="${x}" cy="${y}" r="${6 * escala}" fill="black"/>`;
+						}
+					});
+					
+					svg += `</svg>`;
+					return svg;
+				}
+				
+				// **********************************************
+				// Abre o modal de cifras   
+				// **********************************************
+				function abrirModalCifras() {
+					const container = document.getElementById("cifraContainer");
+					container.innerHTML = "";
+					
+					if (!window.acordesDaMusica || window.acordesDaMusica.length === 0) {
+						container.innerHTML = "<p>Nenhuma cifra encontrada.</p>";
+						return;
+					}
+					
+					window.acordesDaMusica.forEach(nota => {
+						const svg = gerarCifraSVG(nota, acordes, 0.6);
+						const div = document.createElement("div");
+						div.innerHTML = `<h6 class="text-center">${nota}</h6>${svg}`;
+						div.classList.add("mb-4", "cifra-coluna");
+						container.appendChild(div);
+					});
+					
+					const modal = new bootstrap.Modal(document.getElementById("modCifra"));
+					modal.show();
+				}				
+				
+				// **********************************************
+				// Gera json de nota a partir de seleção na tela    
+				// **********************************************
+				function gerarJsonDeSelecaoComDedos() {
+					const viewer = document.getElementById("txtViewer");
+					const selection = window.getSelection();
+					const selectedText = selection.toString().trim();
+					
+					if (!selectedText || !selectedText.includes("=")) {
+						alert("Selecione um trecho no formato: Nota = X 0 2 1 2 0");
+						return;
+					}
+					
+					const [nota, valores] = selectedText.split("=");
+					const nome = nota.trim();
+					const cordas = valores.trim().split(/\s+/);
+					
+					if (cordas.length !== 6) {
+						alert("Formato inválido. São necessárias 6 cordas.");
+						return;
+					}
+					
+					const dedos = [];
+					cordas.forEach((valor, index) => {
+						const casa = parseInt(valor);
+						if (!isNaN(casa) && casa > 0) {
+							dedos.push({
+								Numero: dedos.length + 1,
+								Pestana: false,
+								Corda: 6 - index,
+								Casa: casa
+							});
+						}
+					});
+					
+					const json = {
+						Id: Date.now(),
+						Nome: nome,
+						CasaInicial: 1,
+						Dedos: dedos,
+						CordasUsadas: cordas
+					};
+					
+					alert(JSON.stringify(json, null, 2));
+				}
+				
+				// **********************************************
+				// Gera json de nota a partir de uma linha localizada    
+				// **********************************************
+				function gerarJsonDeSelecaoComDedosFromLinha(linha) {
+					const [nota, valores] = linha.split("=");
+					if (!nota || !valores) return null;
+					
+					const nome = nota.trim();
+					const cordas = valores.trim().split(/\s+/);
+					if (cordas.length !== 6) return null;
+					
+					const dedos = [];
+					cordas.forEach((valor, index) => {
+						const casa = parseInt(valor);
+						if (!isNaN(casa) && casa > 0) {
+							dedos.push({
+								Numero: dedos.length + 1,
+								Pestana: false,
+								Corda: 6 - index,
+								Casa: casa
+							});
+						}
+					});
+					
+					return {
+						Id: Date.now(),
+						Nome: nome,
+						CasaInicial: 1,
+						Dedos: dedos,
+						CordasUsadas: cordas
+					};
+				}
+				
 			</script>			
 		</div>
 	</body>
