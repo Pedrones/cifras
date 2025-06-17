@@ -20,6 +20,13 @@
 			margin-top: 60px;
 			}
 			
+			#painelCifras {
+			height: calc(100vh - 60px);
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			margin-top: 60px;
+			}
+			
 			#right-panel {
 			height: 100vh;
 			display: flex;
@@ -37,7 +44,7 @@
 			z-index: 1050;
 			padding: 10px;
 			display: flex;
-			justify-content: center;
+			justify-content: flex-start;
 			flex-wrap: wrap;
 			gap: 10px;
 			border-bottom: 1px solid #ccc;
@@ -116,7 +123,7 @@
 			top: 5vw;
 			right: 0;
 			margin: 0;
-			height: 100vh;
+			height: 90vh;
 			width: 10vw;
 			max-width: none;
 			transform: translateX(100%);
@@ -130,6 +137,9 @@
 			.modal-backdrop {
 			display: none; /* opcional: remove o fundo escuro */
 			}
+			
+			
+			
 			
 		</style>
 		
@@ -197,7 +207,7 @@
 					</ul>
 				</div>
 				<!-- Painel Direito -->
-				<div class="col-md-9" id="right-panel">
+				<div class="col-md-7" id="right-panel">
 					<!-- Botões de controle -->
 					<div id="divControle">
 						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
@@ -210,8 +220,8 @@
 							<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
 						</div>
 						<div class="btn-group" role="group" aria-label="Controles de rollout">
-							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(10)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
-							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-10)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(20)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-20)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
 							<button class="btn btn-outline-secondary" id="btnSalvarTempo" onclick="saveMusicRollout()" title="Salvar tempo de rolagem"><i class="bi bi-stopwatch"></i></button>
 						</div>
 						<div class="btn-group" role="group" aria-label="Controles de fonte">
@@ -220,10 +230,9 @@
 						</div>
 						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-file-earmark-arrow-up"></i></button>
 						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
-						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton"><i class="bi bi-gear-fill"></i></button>
-						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton"><i class="bi bi-pencil-fill"></i></button>
-						
-						<button class="btn btn-outline-secondary" onclick="abrirModalCifras()" title="Ver cifras"><i class="bi bi-music-note-list"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton" title="Acessar configurações"><i class="bi bi-gear-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton" title="Editar música"><i class="bi bi-pencil-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnToggleCifras" onclick="toggleCifras()" title="Mostrar/Ocultar cifras"><i class="bi bi-music-note-list"></i></button>
 						<!--						
 							<button class="btn btn-outline-secondary" onclick="gerarJsonDeSelecaoComDedos()" title="Criar json cifra"><i class="bi bi-music-note-list"></i></button>
 						-->						
@@ -234,6 +243,20 @@
 						<div id="txtViewer"></div>
 					</div>
 				</div>
+				
+				<div class="col-md-2" id="painelCifras" >
+					
+					
+					<div class="modal-body" id="cifraContainer">
+						<!-- SVGs das cifras serão inseridos aqui -->
+					</div>
+				</div>
+				
+				
+				
+				
+				
+				
 			</div>
 			<!-- ----------------------------------------------- -->
 			<!-- Modal para exibir mapeamento de comandos -->
@@ -369,7 +392,7 @@
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 							</div>
 						-->	
-						<div class="modal-body" id="cifraContainer">
+						<div class="modal-body" id="xxxcifraContainer">
 							<!-- SVGs das cifras serão inseridos aqui -->
 						</div>
 					</div>
@@ -671,7 +694,7 @@
 										  el.innerHTML = el.textContent; // remove qualquer HTML anterior
 									});
 									li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
-									
+									abrirModalCifras();										
 									// Inicia o rollout
 									startRollout(true,true);
 									
@@ -854,10 +877,10 @@
 					input.value = current;
 					
 					// Se já estiver rolando, reinicia com o novo tempo
-					if (rolloutInterval && !isPaused) {
-						stopRollout();
-						startRollout();
-					}
+					//	if (rolloutInterval && !isPaused) {
+					stopRollout();
+					startRollout();
+					//	}
 				}
 				
 				// **********************************************
@@ -1337,7 +1360,7 @@
 				function gerarCifraSVG(nota, acordes, escala = 1) {
 					let acorde = acordes.find(a => a.Nome === nota && a.Dedos);
 					
-				    if (!acorde) {
+					    if (!acorde) {
 						        
 						const linhas = document.getElementById("txtViewer").innerHTML
 						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
@@ -1347,20 +1370,20 @@
 						    .map(l => l.trim());
 						const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));
 						
-				        if (indiceAcordes !== -1) {
-					            for (let i = indiceAcordes + 1; i < linhas.length; i++) {
-						                const linha = linhas[i].trim();
-						
-						                if (linha.startsWith(nota + " ")) {
-							                    const json = gerarJsonDeSelecaoComDedosFromLinha(linha);
-							                    if (json) {
-								                        acorde = json;
-								                        break;
-							                    }
-						                }
-					            }
-				        }
-				    }
+						        if (indiceAcordes !== -1) {
+							            for (let i = indiceAcordes + 1; i < linhas.length; i++) {
+								                const linha = linhas[i].trim();
+								
+								                if (linha.startsWith(nota + " ")) {
+									                    const json = gerarJsonDeSelecaoComDedosFromLinha(linha);
+									                    if (json) {
+										                        acorde = json;
+										                        break;
+									                    }
+								                }
+							            }
+						        }
+					    }
 					
 					if (!acorde) {
 						return `<svg width="160" height="160"><text x="10" y="50">Cifra não encontrada</text></svg>`;
@@ -1430,15 +1453,15 @@
 					}
 					
 					window.acordesDaMusica.forEach(nota => {
-						const svg = gerarCifraSVG(nota, acordes, 0.6);
+						const svg = gerarCifraSVG(nota, acordes, 0.5);
 						const div = document.createElement("div");
-						div.innerHTML = `<h6 class="text-center">${nota}</h6>${svg}`;
+						div.innerHTML = `${svg}<strong class="text-center">&nbsp;${nota}</strong>`;
 						div.classList.add("mb-4", "cifra-coluna");
 						container.appendChild(div);
 					});
 					
-					const modal = new bootstrap.Modal(document.getElementById("modCifra"));
-					modal.show();
+					//		const modal = new bootstrap.Modal(document.getElementById("modCifra"));
+					//		modal.show();
 				}				
 				
 				// **********************************************
@@ -1490,35 +1513,65 @@
 				// **********************************************
 				// Gera json de nota a partir de uma linha localizada    
 				// **********************************************
-				function gerarJsonDeSelecaoComDedosFromLinha(linha) {
-					const [nota, valores] = linha.split("=");
-					if (!nota || !valores) return null;
+function gerarJsonDeSelecaoComDedosFromLinha(linha) {
+  const [nota, valoresRaw] = linha.split("=");
+  if (!nota || !valoresRaw) return null;
+
+  const nome = nota.trim();
+  const partes = valoresRaw.trim().split(/\s+/);
+
+  if (partes.length < 6) return null;
+
+  const cordas = partes.slice(0, 6);
+  const pestanaInfo = partes.find(p => /^P\d+$/.test(p));
+  const casaPestana = pestanaInfo ? parseInt(pestanaInfo.substring(1)) : null;
+
+  const dedos = [];
+  cordas.forEach((valor, index) => {
+    const casa = parseInt(valor);
+    if (!isNaN(casa) && casa > 0) {
+      dedos.push({
+        Numero: dedos.length + 1,
+        Pestana: casaPestana !== null && casa === casaPestana,
+        Corda: 6 - index,
+        Casa: casa
+      });
+    }
+  });
+
+  return {
+    Id: Date.now(),
+    Nome: nome,
+    CasaInicial: 1,
+    Dedos: dedos,
+    CordasUsadas: cordas
+  };
+}
+
+				// **********************************************
+				// Mostra ou oculta a divisão de cifras    
+				// **********************************************
+				function toggleCifras() {
+					const painel = document.getElementById("painelCifras");
+					const rightPanel = document.getElementById("right-panel");
 					
-					const nome = nota.trim();
-					const cordas = valores.trim().split(/\s+/);
-					if (cordas.length !== 6) return null;
+					if (!painel || !rightPanel) return;
 					
-					const dedos = [];
-					cordas.forEach((valor, index) => {
-						const casa = parseInt(valor);
-						if (!isNaN(casa) && casa > 0) {
-							dedos.push({
-								Numero: dedos.length + 1,
-								Pestana: false,
-								Corda: 6 - index,
-								Casa: casa
-							});
-						}
-					});
+					const isVisible = painel.style.display !== "none";
 					
-					return {
-						Id: Date.now(),
-						Nome: nome,
-						CasaInicial: 1,
-						Dedos: dedos,
-						CordasUsadas: cordas
-					};
+					// Alterna visibilidade do painel de cifras
+					painel.style.display = isVisible ? "none" : "block";
+					
+					// Ajusta a largura do painel direito
+					rightPanel.classList.remove("col-md-7", "col-md-9");
+					rightPanel.classList.add(isVisible ? "col-md-9" : "col-md-7");
+					
+					// Se estiver sendo exibido, atualiza as cifras
+					if (!isVisible) {
+						abrirModalCifras();
+					}
 				}
+				
 				
 			</script>			
 		</div>
