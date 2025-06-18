@@ -25106,10 +25106,29 @@ let acordes = [
     "CordasUsadas": null
   },
   {
-    "Id": 3547,
+    "Id": 1750256589727,
     "Nome": "Em7",
-    "CasaInicial": null,
-    "Dedos": null,
+    "CasaInicial": 1,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": false,
+        "Corda": 5,
+        "Casa": 2
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 4,
+        "Casa": 2
+      },
+      {
+        "Numero": 3,
+        "Pestana": false,
+        "Corda": 2,
+        "Casa": 3
+      }
+    ],
     "CordasUsadas": [
       "0",
       "2",
