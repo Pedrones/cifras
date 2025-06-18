@@ -3,7 +3,7 @@ let acordes = [
         "Id": 4,
         "Nome": "C",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
@@ -346,7 +346,7 @@ let acordes = [
         "Id": 37,
         "Nome": "C7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
@@ -803,7 +803,7 @@ let acordes = [
         "Id": 91,
         "Nome": "Cm7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -13907,7 +13907,7 @@ let acordes = [
         "Id": 3,
         "Nome": "D",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 4,
         "Dedos": [
             {
                 "Numero": 1,
@@ -14084,7 +14084,7 @@ let acordes = [
         "Id": 32,
         "Nome": "Dm",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 4,
         "Dedos": [
             {
                 "Numero": 1,
@@ -14254,7 +14254,7 @@ let acordes = [
         "Id": 33,
         "Nome": "D7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 4,
         "Dedos": [
             {
                 "Numero": 1,
@@ -14719,7 +14719,7 @@ let acordes = [
         "Id": 1819,
         "Nome": "Dm7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 4,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -27843,7 +27843,7 @@ let acordes = [
         "Id": 25,
         "Nome": "E",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -28013,7 +28013,7 @@ let acordes = [
         "Id": 26,
         "Nome": "Em",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -28184,7 +28184,7 @@ let acordes = [
         "Id": 34,
         "Nome": "E7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -28636,7 +28636,7 @@ let acordes = [
         "Id": 3547,
         "Nome": "Em7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": null,
         "CordasUsadas": [
             "0",
@@ -32538,7 +32538,7 @@ let acordes = [
         "Id": 6,
         "Nome": "F",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -32714,7 +32714,7 @@ let acordes = [
         "Id": 4051,
         "Nome": "Fm",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": null,
         "CordasUsadas": [
             "1",
@@ -32865,7 +32865,7 @@ let acordes = [
         "Id": 7,
         "Nome": "F7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -33330,7 +33330,7 @@ let acordes = [
         "Id": 4123,
         "Nome": "Fm7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -46511,7 +46511,7 @@ let acordes = [
         "Id": 30,
         "Nome": "G",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -46719,7 +46719,7 @@ let acordes = [
         "Id": 36,
         "Nome": "Gm",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -46889,7 +46889,7 @@ let acordes = [
         "Id": 31,
         "Nome": "G7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": [
             {
                 "Numero": 1,
@@ -47354,7 +47354,7 @@ let acordes = [
         "Id": 5851,
         "Nome": "Gm7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 6,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -60642,7 +60642,7 @@ let acordes = [
         "Id": 28,
         "Nome": "Am",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
@@ -60812,7 +60812,7 @@ let acordes = [
         "Id": 29,
         "Nome": "A7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
@@ -61318,7 +61318,7 @@ let acordes = [
         "Id": 7579,
         "Nome": "Am7",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -74458,7 +74458,7 @@ let acordes = [
         "Id": 9217,
         "Nome": "B",
         "CasaInicial": null,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": null,
         "CordasUsadas": null
     },
@@ -74778,7 +74778,7 @@ let acordes = [
         "Id": 48,
         "Nome": "B7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
@@ -75242,7 +75242,7 @@ let acordes = [
         "Id": 42,
         "Nome": "Bm7",
         "CasaInicial": 1,
-        "CordaInicial": null,
+        "CordaInicial": 5,
         "Dedos": [
             {
                 "Numero": 1,
