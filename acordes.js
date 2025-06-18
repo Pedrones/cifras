@@ -42554,11 +42554,31 @@ let acordes = [
     "CordasUsadas": null
   },
   {
-    "Id": 5995,
+    "Id": 1750256623894,
     "Nome": "G9",
-    "CasaInicial": null,
-    "Dedos": null,
-    "CordasUsadas": null
+    "CasaInicial": 1,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": false,
+        "Corda": 6,
+        "Casa": 3
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 3,
+        "Casa": 2
+      }
+    ],
+    "CordasUsadas": [
+      "3",
+      "X",
+      "0",
+      "2",
+      "0",
+      "X"
+    ]
   },
   {
     "Id": 5996,
