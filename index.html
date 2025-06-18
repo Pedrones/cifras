@@ -400,25 +400,25 @@
 			</div>
 			
 			<!-- ----------------------------------------------- -->
-<!-- Modal para editar acorde -->
+			<!-- Modal para editar acorde -->
 			<!-- ----------------------------------------------- -->
-<div class="modal fade" id="modalEditarAcorde" tabindex="-1" aria-labelledby="modalEditarAcordeLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalEditarAcordeLabel">Editar Acorde</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <textarea id="jsonAcordeEditor" class="form-control" rows="15" style="font-family: monospace;"></textarea>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btnSalvarAcordeJson">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
+			<div class="modal fade" id="modalEditarAcorde" tabindex="-1" aria-labelledby="modalEditarAcordeLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="modalEditarAcordeLabel">Editar Acorde</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+						</div>
+						<div class="modal-body">
+							<textarea id="jsonAcordeEditor" class="form-control" rows="15" style="font-family: monospace;"></textarea>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+							<button type="button" class="btn btn-primary" id="btnSalvarAcordeJson">Salvar</button>
+						</div>
+					</div>
+				</div>
+			</div>
 			
 			
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1382,7 +1382,7 @@
 					let acorde = acordes.find(a => a.Nome === nota && a.Dedos);
 					vermelho = "";
 					    if (!acorde) {
-						vermelho = `style="color: red;" onclick=editarAcordePorNota(this.innerText); `;        
+						vermelho = `style="color: red;" `;        
 						const linhas = document.getElementById("txtViewer").innerHTML
 						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
 						    .replace(/<br\s*\/?>/gi, '\n')        // converte <br> em \n
@@ -1422,12 +1422,26 @@
 					// Cordas usadas (X e O)
 					if (acorde.CordasUsadas) {
 						acorde.CordasUsadas.forEach((valor, i) => {
+							const cordaInicialIndex = acorde.CordaInicial ? 6 - acorde.CordaInicial : -1;
+							
 							if (valor === "X" || valor === "0") {
 								const x = espacamento + i * espacamento;
-								svg += `<text x="${x}" y="${espacamento * 0.8}" font-size="${20 * escala}" text-anchor="middle">${valor}</text>`;
+								if (i !== cordaInicialIndex || valor === "X") {
+									svg += `<text x="${x}" y="${espacamento * 0.8}" font-size="${20 * escala}" text-anchor="middle">${valor}</text>`;
+								}
 							}
 						});
 					}
+					
+					// Marca a corda inicial com um círculo preto
+					
+					if (acorde.CordaInicial) {
+						  const i = 6 - acorde.CordaInicial; // ajusta para índice de 0 a 5, da 6ª para a 1ª corda
+						  const x = espacamento + i * espacamento;
+						  const y = espacamento * 0.3; // posição vertical acima dos "X" e "0"
+						  svg += `<circle cx="${x}" cy="${y}" r="${6 * escala}" fill="black"/>`;
+					}
+					
 					
 					// Linhas verticais (cordas)
 					for (let i = 0; i < cordas; i++) {
@@ -1476,7 +1490,7 @@
 					window.acordesDaMusica.forEach(nota => {
 						const svg = gerarCifraSVG(nota, acordes, 0.5);
 						const div = document.createElement("div");
-						div.innerHTML = `${svg}<strong ${vermelho} class="text-center">&nbsp;${nota}</strong>`;
+						div.innerHTML = `${svg}<strong ${vermelho} class="text-center" onclick=editarAcordePorNota(this.innerText);>&nbsp;${nota}</strong>`;
 						div.classList.add("mb-4", "cifra-coluna");
 						container.appendChild(div);
 					});
@@ -1593,10 +1607,9 @@
 					}
 				}
 				
-				
-				
-				
-				
+				// **********************************************
+				//     
+				// **********************************************
 				async function salvarAcordeNoGitHub(novoAcorde) {
 					const url = myUrl + 'acordes.js';
 					
@@ -1647,96 +1660,94 @@
 						alert("Erro ao salvar acorde.");
 					}
 				}
-
-
-
-async function editarAcordePorNota(notaParm) {
-	
-						const nota = notaParm.trim();
+				
+				// **********************************************
+				//    
+				// **********************************************
+				async function editarAcordePorNota(notaParm) {
+					const nota = notaParm.trim();
+					
+					// 1. Tenta encontrar o acorde na variável acordes
+					let acordeJson = acordes.find(a => a.Nome === nota);
+					
+					// 2. Se não encontrar ou se 'Dedos' for null ou undefined, tenta extrair do texto
+					if (!acordeJson || !Array.isArray(acordeJson.Dedos) || acordeJson.Dedos.length === 0) {
 						const linhas = document.getElementById("txtViewer").innerHTML
-						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
-						    .replace(/<br\s*\/?>/gi, '\n')        // converte <br> em \n
-						    .replace(/<\/?[^>]+(>|$)/g, "")       // remove tags HTML
-						    .split("\n")
-						    .map(l => l.trim());	
-	
-	
-  //const linhas = document.getElementById("txtViewer").innerText.split("\n").map(l => l.trim());
-  const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));   
-  let acordeJson = null;
-
-  if (indiceAcordes !== -1) {
-    for (let i = indiceAcordes + 1; i < linhas.length; i++) {
-      const linha = linhas[i];                              
-      if (linha.startsWith(nota + " ")) {                   
-        acordeJson = gerarJsonDeSelecaoComDedosFromLinha(linha);
-        break;
-      }
-    }
-  }
-
-  if (!acordeJson) {
-    alert("Cifra para a nota não encontrada no texto.");
-    return;
-  }
-
-  // Preenche o modal com o JSON
-  document.getElementById("jsonAcordeEditor").value = JSON.stringify(acordeJson, null, 2);
-
-  // Mostra o modal
-  const modal = new bootstrap.Modal(document.getElementById("modalEditarAcorde"));
-  modal.show();
-
-  // Define o comportamento do botão de salvar
-  document.getElementById("btnSalvarAcordeJson").onclick = async () => {
-    try {
-      const jsonEditado = JSON.parse(document.getElementById("jsonAcordeEditor").value);
-      const indexExistente = acordes.findIndex(a => a.Nome === nota);
-
-      if (indexExistente === -1) {
-        acordes.push(jsonEditado);
-      } else {
-        acordes[indexExistente] = jsonEditado;
-      }
-
-      // Atualiza acordes.js no GitHub
-      const url = myUrl + 'acordes.js';
-      const response = await fetch(url, { headers: autHeaders });
-      const data = await response.json();
-      const sha = data.sha;
-
-      const novoConteudo = `let acordes = ${JSON.stringify(acordes, null, 2)};`;
-      const base64Content = btoa(unescape(encodeURIComponent(novoConteudo)));
-
-      const putResponse = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          ...autHeaders,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: `Atualiza acorde ${nota}`,
-          content: base64Content,
-          sha: sha
-        })
-      });
-
-      if (putResponse.ok) {
-        alert(`Acorde ${nota} salvo com sucesso!`);
-        modal.hide();
-      } else {
-        const result = await putResponse.json();
-        alert("Erro ao salvar acorde: " + result.message);
-      }
-    } catch (e) {
-      alert("Erro ao processar JSON: " + e.message);
-    }
-  };
-}
-
-
-
-
+						.replace(/&nbsp;/g, ' ')
+						.replace(/ /g, ' ')
+						.replace(/<br\s*\/?>/gi, '\n')
+						.replace(/<\/?[^>]+(>\n$)?/g, "")
+						.split("\n")
+						.map(l => l.trim());
+						
+						const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));
+						if (indiceAcordes !== -1) {
+							for (let i = indiceAcordes + 1; i < linhas.length; i++) {
+								const linha = linhas[i];
+								if (linha.startsWith(nota + " ")) {
+									acordeJson = gerarJsonDeSelecaoComDedosFromLinha(linha);
+									break;
+								}
+							}
+						}
+						
+						if (!acordeJson) {
+							alert("Cifra para a nota não encontrada.");
+							return;
+						}
+					}
+					
+					// Preenche o modal com o JSON
+					document.getElementById("jsonAcordeEditor").value = JSON.stringify(acordeJson, null, 2);
+					
+					// Mostra o modal
+					const modal = new bootstrap.Modal(document.getElementById("modalEditarAcorde"));
+					modal.show();
+					
+					// Define o comportamento do botão de salvar
+					document.getElementById("btnSalvarAcordeJson").onclick = async () => {
+						try {
+							const jsonEditado = JSON.parse(document.getElementById("jsonAcordeEditor").value);
+							const indexExistente = acordes.findIndex(a => a.Nome === nota);
+							if (indexExistente === -1) {
+								acordes.push(jsonEditado);
+								} else {
+								acordes[indexExistente] = jsonEditado;
+							}
+							
+							const url = myUrl + 'acordes.js';
+							const response = await fetch(url, { headers: autHeaders });
+							const data = await response.json();
+							const sha = data.sha;
+							const novoConteudo = `let acordes = ${JSON.stringify(acordes, null, 2)};`;
+							const base64Content = btoa(unescape(encodeURIComponent(novoConteudo)));
+							
+							const putResponse = await fetch(url, {
+								method: 'PUT',
+								headers: {
+									...autHeaders,
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									message: `Atualiza acorde ${nota}`,
+									content: base64Content,
+									sha: sha
+								})
+							});
+							
+							if (putResponse.ok) {
+								alert(`Acorde ${nota} salvo com sucesso!`);
+								modal.hide();
+								} else {
+								const result = await putResponse.json();
+								alert("Erro ao salvar acorde: " + result.message);
+							}
+							} catch (e) {
+							alert("Erro ao processar JSON: " + e.message);
+						}
+					};
+				}
+				
 			</script>			
 		</div>
 	</body>
