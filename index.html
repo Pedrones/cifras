@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Visualizador de Cifras</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+		<style>
+			html, body {
+			height: 100%;
+			margin: 0;
+			overflow: hidden; /* Impede rolagem global */
+			}
+			
+			#left-panel {
+			height: calc(100vh - 60px);
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			margin-top: 60px;
+			}
+			
+			#painelCifras {
+			height: calc(100vh - 60px);
+			overflow-y: auto;
+			border-right: 1px solid #ccc;
+			margin-top: 60px;
+			}
+			
+			#right-panel {
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			padding-top: 60px; /* altura da barra fixa */
+			overflow: hidden;
+			}
+			
+			#divControle {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			background-color: white;
+			z-index: 1050;
+			padding: 10px;
+			display: flex;
+			justify-content: flex-start;
+			flex-wrap: wrap;
+			gap: 10px;
+			border-bottom: 1px solid #ccc;
+			}
+			
+			#divRolagem {
+			flex: 1;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			}
+			
+			#txtViewer {
+			flex: 1;
+			overflow-y: auto;
+			font-family: monospace;
+			padding: 10px;
+			}
+			
+			.list-group-item:hover {
+			  cursor: pointer !important;
+			}
+			
+			.corCifra {
+			color:red;
+			}
+			
+			body.dark-mode {
+			background-color: #121212;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode #divControle,
+			body.dark-mode .modal-content {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item {
+			background-color: #1e1e1e;
+			color: #e0e0e0;
+			}
+			
+			body.dark-mode .list-group-item:hover {
+			background-color: #2a2a2a;
+			}
+			
+			body.dark-mode .corCifra {
+			color: yellow;
+			}
+			
+			#editArea {
+			    white-space: pre-wrap;
+			}
+			
+			
+			#cifraContainer {
+			  display: flex;
+			  flex-wrap: wrap;
+			  gap: 20px;
+			  width: 100%;
+			}
+			
+			#cifraContainer > div {
+			  flex: 1 1 calc(33.333% - 20px);
+			  box-sizing: border-box;
+			  min-width: 200px; /* evita colapsar em telas pequenas */
+			}
+			
+			.cifra-coluna {
+			  flex: 1 1 calc(33.333% - 20px);
+			}
+			
+			.modal-sidepanel {
+			position: fixed;
+			top: 5vw;
+			right: 0;
+			margin: 0;
+			height: 90vh;
+			width: 10vw;
+			max-width: none;
+			transform: translateX(100%);
+			transition: transform 0.3s ease-out;
+			}
+			
+			.modal.show .modal-sidepanel {
+			transform: translateX(0);
+			}
+			
+			.modal-backdrop {
+			display: none; /* opcional: remove o fundo escuro */
+			}
+			
+			
+			
+			
+		</style>
+		
+		
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<!-- Painel Esquerdo -->
+				<div class="col-md-3 p-3" id="left-panel">
+					<div style="display:none">
+						<!-- Abas -->
+						<ul class="nav nav-tabs" id="abasExemplo" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button aria-controls="arqLoc" aria-selected="true" class="nav-link active" data-bs-target="#arqLoc" data-bs-toggle="tab" id="arqLoc-tab" role="tab" type="button">Local</button>
+							</li>
+							<li class="nav-item" role="presentation">
+								<button aria-controls="arqGdr" aria-selected="false" class="nav-link" data-bs-target="#arqGdr" data-bs-toggle="tab" id="arqGdr-tab" role="tab" type="button">Google Drive</button>
+							</li>
+						</ul>
+						<!-- Conteúdo das Abas -->
+						<div class="tab-content p-3 border border-top-0" id="abasExemploConteudo">
+							<div aria-labelledby="arqLoc-tab" class="tab-pane fade show active" id="arqLoc" role="tabpanel">
+								<br/>
+								<input accept=".txt,.pdf,.doc*,.html,.rtf" class="form-control" directory="True" id="folderInput" multiple="True" type="file" webkitdirectory="True"/>
+							</div>
+							<div aria-labelledby="arqGdr-tab" class="tab-pane fade" id="arqGdr" role="tabpanel">
+								<br/>
+								<input class="form-control" id="cloud-link" placeholder="https://drive.google.com/..." type="url"/>
+								<input class="form-control mb-3" id="api-key" placeholder="Cole sua chave de API aqui" type="text"/>
+								<button class="btn btn-outline-secondary w-100 mb-3" onclick="loadDriveFiles()">Carregar Arquivos do Drive</button>
+							</div>
+						</div>
+					</div>
+					<!-- Nav tabs -->
+					<ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" data-bs-toggle="tab" href="#divSearch" style="font-size: 12px;">Músicas</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="tab" href="#divPlaylist" style="font-size: 12px;">Playlists</a>
+						</li>
+					</ul>
+					<!-- Tab panes -->
+					<div class="tab-content">
+						<div class="container tab-pane active border border-top-0 p-3" id="divSearch">
+							<input class="form-control" id="search-filter" placeholder="Buscar música..." style="font-size: 12px;" type="text"/>
+						</div>
+						<div class="container tab-pane fade border border-top-0 p-3" id="divPlaylist">
+							<div class="d-flex align-items-center gap-2">
+								<select class="form-control" id="playlistSelect" style="font-size: 12px; max-width: 300px;"><option value="">Todas</option>
+									<option value="">Todas as músicas</option>
+								</select>
+								<button class="btn btn-outline-secondary" id="btnEditPlaylist" onclick="openModalPlaylist(false);" style="font-size: 0.6rem;">
+									<i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
+								</button>
+								<button class="btn btn-outline-secondary" id="btnNewPlaylist" onclick="openModalPlaylist(true);" style="font-size: 0.6rem;">
+									<i class="bi bi-plus-lg" style="font-size: 0.8rem;"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+					<!-- Lista de musicas -->
+					<ul class="list-group" id="songList" style="font-size: 12px;">
+					</ul>
+				</div>
+				<!-- Painel Direito -->
+				<div class="col-md-7" id="right-panel">
+					<!-- Botões de controle -->
+					<div id="divControle">
+						<input class="form-control" id="wait-time" min="0" style="display:none;" title="Espera para scroll" type="number" value="5"/>
+						<input class="form-control" id="rollout-time" min="0" style="display:none;" title="Scroll em segundos" type="number" value="240"/>
+						<input class="form-control" id="uploadFileGitHub" style="display:none;" title="Arquivo para upload" type="file"/>
+						<div class="btn-group" role="group" aria-label="Controles de execução">
+							<button class="btn btn-outline-secondary" id="btnIniciar" onclick="startRollout(true,true)" title="Iniciar"><i class="bi bi-play-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnPausar" onclick="pauseRollout()" title="Pausar"><i class="bi bi-pause-fill"></i></button>
+							<button class="btn btn-outline-secondary" id="btnContinuar" onclick="continueRollout()" title="Continuar"><i class="bi bi-play"></i></button>
+							<button class="btn btn-outline-secondary" id="btnParar" onclick="stopRollout()" title="Parar"><i class="bi bi-stop-fill"></i></button>
+						</div>
+						<div class="btn-group" role="group" aria-label="Controles de rollout">
+							<button class="btn btn-outline-secondary" id="btnDevagar" onclick="adjustRolloutTime(20)" title="Diminuir rolagem"><i class="bi bi-rewind"></i></button>
+							<button class="btn btn-outline-secondary" id="btnRapido" onclick="adjustRolloutTime(-20)" title="Acelerar rolagem"><i class="bi bi-fast-forward"></i></button>
+							<button class="btn btn-outline-secondary" id="btnSalvarTempo" onclick="saveMusicRollout()" title="Salvar tempo de rolagem"><i class="bi bi-stopwatch"></i></button>
+						</div>
+						<div class="btn-group" role="group" aria-label="Controles de fonte">
+							<button class="btn btn-outline-secondary" id="btnMenor" onclick="changeFontSize(false)" title="Diminuir fonte"><strong>a</strong></button>
+							<button class="btn btn-outline-secondary" id="btnMaior" onclick="changeFontSize(true)" title="Aumentar fonte"><strong>A</strong></button>
+						</div>
+						<button class="btn btn-outline-secondary" id="btnUpload" onclick="uploadToGitHub()" title="Upload arquivo"><i class="bi bi-file-earmark-arrow-up"></i></button>
+						<button class="btn btn-outline-secondary" id="btnVoice" onclick="toggleVoiceControl()" title="Ativar/desativar comando por voz"><i class="bi bi-mic-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#configModal" data-bs-toggle="modal" id="configButton" title="Acessar configurações"><i class="bi bi-gear-fill"></i></button>
+						<button class="btn btn-outline-secondary" data-bs-target="#editModal" data-bs-toggle="modal" id="editButton" title="Editar música"><i class="bi bi-pencil-fill"></i></button>
+						<button class="btn btn-outline-secondary" id="btnToggleCifras" onclick="toggleCifras()" title="Mostrar/Ocultar cifras"><i class="bi bi-music-note-list"></i></button>
+						<!--						
+							<button class="btn btn-outline-secondary" onclick="gerarJsonDeSelecaoComDedos()" title="Criar json cifra"><i class="bi bi-music-note-list"></i></button>
+						-->						
+					</div>
+					<!-- Rolagem de telas -->
+					<div id="divRolagem">
+						<!-- Conteudo do arquivo -->
+						<div id="txtViewer"></div>
+					</div>
+				</div>
+				
+				<div class="col-md-2" id="painelCifras" >
+					
+					
+					<div class="modal-body" id="cifraContainer">
+						<!-- SVGs das cifras serão inseridos aqui -->
+					</div>
+				</div>
+				
+				
+				
+				
+				
+				
+			</div>
+			<!-- ----------------------------------------------- -->
+			<!-- Modal para exibir mapeamento de comandos -->
+			<!-- ----------------------------------------------- -->
+			<div aria-hidden="true" aria-labelledby="voiceCommandModalLabel" class="modal fade" id="voiceCommandModal" tabindex="-1">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="voiceCommandModalLabel">Comandos de Voz Disponíveis</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<table class="table table-bordered" style="font-size:small">
+								<thead>
+									<tr><th>Diga</th><th>Para</th></tr>
+								</thead>
+								<tbody id="tabComandos"></tbody>
+							</table>
+							<ul id="voiceCommandList"></ul>
+						</div>
+						<div class="modal-footer">
+							<div class="form-check mt-3">
+								  <input class="form-check-input" id="naoMostrarNovamente" type="checkbox" value=""/>
+								  <label class="form-check-label" for="naoMostrarNovamente">
+									    Não mostrar novamente
+								  </label>
+							</div>
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ----------------------------------------------- -->
+			<!-- Modal de configuracoes -->
+			<!-- ----------------------------------------------- -->
+			<div aria-hidden="true" aria-labelledby="configModalLabel" class="modal fade" id="configModal" tabindex="-1">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="configModalLabel">Configurações</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<form id="configForm">
+								<h5>Tempo em segundos para inciar rolagem</h5>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="autoStartTime" style="min-width: 300px;">Após selecionar a cifra</label>
+									<input class="form-control" id="autoStartTime" name="autoStartTime" style="max-width: 200px;" type="number"/>
+								</div>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="autoStartVoiceTime" style="min-width: 300px;">Após abrir com comando de voz</label>
+									<input class="form-control" id="autoStartVoiceTime" name="autoStartVoiceTime" style="max-width: 200px;" type="number"/>
+								</div>
+								<h5>Comando de voz</h5>
+								<div class="mb-3 d-flex align-items-center">
+									<label class="form-label me-2 mb-0" for="voiceCommandWord" style="min-width: 300px;">Palavra para comando de voz</label>
+									<input class="form-control" id="voiceCommandWord" name="voiceCommandWord" style="max-width: 200px;" type="text"/>
+								</div>
+								<div class="mb-3 form-check form-switch">
+									<input class="form-check-input" id="showVoiceCommandModal" name="showVoiceCommandModal" type="checkbox"/>
+									<label class="form-check-label" for="showVoiceCommandModal">Apresentar instruções ao ativar microfone</label>
+								</div>
+								<div class="form-check form-switch mb-3">
+									<input class="form-check-input" id="darkModeToggle" type="checkbox"/>
+									<label class="form-check-label" for="darkModeToggle">Modo Escuro</label>
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+							<button class="btn btn-primary" id="saveConfigButton" type="button">Salvar Configurações</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ----------------------------------------------- -->
+			<!-- Modal de edição -->
+			<!-- ----------------------------------------------- -->
+			<div aria-hidden="true" aria-labelledby="editModalLabel" class="modal fade" id="editModal" tabindex="-1">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editModalLabel">Editar Arquivo</h5>
+							<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<textarea class="form-control" id="editArea" rows="20" style="font-family: monospace;"></textarea>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button>
+							<button class="btn btn-primary" onclick="saveChanges()" type="button">Salvar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ----------------------------------------------- -->
+			<!-- Modal de Listas de Músicas -->
+			<!-- ----------------------------------------------- -->
+			<div aria-hidden="true" aria-labelledby="playlistModalLabel" class="modal fade" id="playlistModal" tabindex="-1">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="playlistModalLabel">Gerenciar Lista de Músicas</h5>
+							<button aria-label="Fechar" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+						</div>
+						<div class="modal-body">
+							<h5 id="playlistTitle"></h5>
+							<div class="border p-2" id="songCheckboxList" style="max-height: 300px; overflow-y: auto;">
+								<!-- Checkboxes serão inseridos aqui -->
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-secondary" id="btnFechaPlaylist" data-bs-dismiss="modal">Cancelar</button>
+							<!--
+								<button class="btn btn-primary" onclick="createPlaylist()">Criar</button>
+							-->
+							<button class="btn btn-primary" onclick="savePlaylistLocal()">Salvar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			<!-- ----------------------------------------------- -->
+			<!-- Modal de Cifras -->
+			<!-- ----------------------------------------------- -->
+			<div class="modal fade" id="modCifra" tabindex="-1" aria-labelledby="modCifraLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-scrollable modal-sidepanel">
+					<div class="modal-content">
+						<!--
+							<div class="modal-header">
+							<h5 class="modal-title" id="modCifraLabel">Cifras da Música</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+							</div>
+						-->	
+						<div class="modal-body" id="xxxcifraContainer">
+							<!-- SVGs das cifras serão inseridos aqui -->
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- ----------------------------------------------- -->
+<!-- Modal para editar acorde -->
+			<!-- ----------------------------------------------- -->
+<div class="modal fade" id="modalEditarAcorde" tabindex="-1" aria-labelledby="modalEditarAcordeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarAcordeLabel">Editar Acorde</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="jsonAcordeEditor" class="form-control" rows="15" style="font-family: monospace;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarAcordeJson">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+			
+			
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+			
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+			
+			<script src="acordes.js"></script>
+			<script>
+				// **********************************************
+				// Declaração de variáveis 
+				// **********************************************
+				const usuario = "pedrones";
+				const repositorio = "cifras";
+				const pasta = "cifras";
+				// Para localStorage
+				let autoStartTime;
+				let autoStartVoiceTime;
+				let voiceCommandWord;
+				let showVoiceCommandModal;
+				let isDarkMode;
+				// Para modal de comandos
+				let comandos = [];
+				// Controle de rollout
+				let rolloutInterval;
+				let isPaused = false;
+				let scrolled = 0;
+				let scrollHeight;
+				let step;
+				// Para controle de microfone
+				let recognition;
+				let recognizing = false;
+				let currentFile;
+				
+				let globalPlaylists = null;
+				let globalConfigs = null;
+				let globalRollouts = null;
+				let playlistsSha = null;
+				let vermelho = "";
+				
+				// ************************************
+				// Lê playlists e config do GitHub
+				// ************************************
+				async function loadGlobalPlaylists() {
+					const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
+						headers: autHeaders
+					});
+					const data = await response.json();
+					playlistsSha = data.sha;
+					
+					// Decodificação correta em UTF-8
+					const binary = atob(data.content);
+					const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+					const decodedContent = new TextDecoder('utf-8').decode(bytes);     
+					
+					const parsedData = JSON.parse(decodedContent);
+					
+					globalPlaylists = parsedData.playlists;          
+					globalConfigs = parsedData.configuracoes;
+					globalRollouts = parsedData.rollouts
+					
+					autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
+					autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
+					voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
+					
+					// Conversão segura de string para booleano
+					showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
+					isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
+					
+					// Aplica o modo escuro aqui
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					// Carrega os campos do modal de configurações 
+					carregarConfig();	
+					// Carrega select de Playlists
+					loadSelectPlaylists();
+				}
+				
+				
+				// ************************************
+				// Salva playlists e config no github
+				// ************************************
+				async function savePlaylistGithub(tipo) {
+					if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
+						alert("Token ou SHA não disponíveis para salvar no Github.");
+						return;
+					}
+					
+					const fullData = {
+						playlists: globalPlaylists,
+						configuracoes: globalConfigs,
+						rollouts: globalRollouts
+					};
+					
+					const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
+					
+					const putResponse = await fetch(myUrl + 'playlists.json', {
+						method: 'PUT',
+						headers: autHeaders,
+						body: JSON.stringify({
+							message: `Atualiza ${tipo} via variável global`,
+							content: encodedContent,
+							sha: playlistsSha
+						})
+					});
+					
+					if (!putResponse.ok) {
+						alert('Erro ao salvar ' + tipo + ' no Github.');
+						} else {
+						alert(tipo + ' exportada com sucesso');
+					}
+				}
+				
+				// ************************************
+				// Chama a carga da playlist ao carregar o documento
+				// ************************************
+				window.addEventListener('DOMContentLoaded', async () => {
+					await loadGlobalPlaylists();
+					// ... outras inicializações
+				});
+				
+				// ************************************
+				// Função para salvar a playlist na variavel
+				// ************************************
+				async function savePlaylistLocal() {
+					const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
+					const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
+					globalPlaylists[selectedPlaylist] = selectedSongs;  
+					document.getElementById("btnFechaPlaylist").click();
+					document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
+					//alert("Playlist atualizada na variável global.");
+					// Chamada assíncrona sem aguardar
+					await savePlaylistGithub('Playlist');
+					
+				}
+				
+				
+				const tokenEncoded = "U2FsdGVkX1+dYyB3Cx6pbh4gz9Nh0446DTxLwkTjMx8zy7vx8MxKptdpurfd6SNFCvYyLj37VnrJXk5QarsmtQ==";
+				let myToken = localStorage.getItem("tokenCifra");
+				
+				async function solicitarSenha() {
+					while (true) {
+						const senha = prompt("Informe a senha para descriptografar o token:");
+						if (senha === null) {
+							alert("Senha não informada. Algumas funcionalidades podem não estar disponíveis.");
+							return null;
+						}
+						
+						try {
+							const bytes = CryptoJS.AES.decrypt(tokenEncoded, senha);
+							const token = bytes.toString(CryptoJS.enc.Utf8);
+							
+							if (token && token.startsWith("ghp_")) {
+								localStorage.setItem("tokenCifra", token);
+								return token;
+								} else {
+								alert("Senha incorreta. Por favor, tente novamente.");
+								localStorage.removeItem("tokenCifra");
+							}
+							} catch (e) {
+							alert("Erro ao tentar descriptografar. Tente novamente.");
+							localStorage.removeItem("tokenCifra");
+						}
+					}
+				}
+				
+				(async () => {
+					if (!myToken) {
+						myToken = await solicitarSenha();
+					}
+					
+					//const autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+					//console.log("Cabeçalhos de autenticação:", autHeaders);
+					
+					// Aqui você pode continuar com funcionalidades limitadas, se necessário
+				})();
+				
+				
+				
+				
+				// Cabeçalhos de autenticação
+				let autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+				
+				// Busca os arquivos .txt 
+				let myUrl = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
+				fetch(myUrl, {
+					  headers: autHeaders
+				})
+				.then(response => response.json())
+				.then(files => {
+					const songList = document.getElementById('songList');
+					const txtViewer = document.getElementById('txtViewer');
+					files.forEach(file => {
+						if (file.name.endsWith('.txt')) {
+							const li = document.createElement('li');
+							li.className = 'list-group-item';
+							li.textContent = file.name;
+							
+							li.setAttribute('data-name', file.name);
+							
+							li.style.cursor = 'pointer';
+							li.onclick = () => {
+								
+								currentFile = file.name;
+								
+								fetch(file.download_url)
+								.then(res => res.text())
+								.then(texto => {
+									stopRollout();
+									const linhas = texto.split('\n');
+									const htmlFormatado = linhas.map((linha, index) => {
+										const linhaEscapada = linha.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+										const linhaComEspacos = linhaEscapada.replace(/ /g, '&nbsp;');
+										const linhaTrim = linha.trim();
+										
+										// Verifica se há alguma palavra com mais de 5 letras
+										const hasLongWord = linhaTrim.split(' ').some(word => word.length > 5);
+										
+										// Monta notas musicais possiveis
+										const notasBase = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+										const sufixos = [
+										  '', 'm', '7', 'maj7', '7M', 'm7', 'mMaj7', 'dim', 'aug',
+										  'sus2', 'sus4', '6', 'm6', '9', 'maj9', 'm9', '11', '13',
+										  'add9', 'add11', 'add13', '7b5', '7#5', '7b9', '7#9',
+										  '13b9', '7sus4', '7sus2', '5', 'no3', 'no5', 'm7b5'
+										];
+										const baixos = ['', '/C', '/C#', '/Db', '/D', '/D#', '/Eb', '/E', '/F', '/F#', '/Gb', '/G', '/G#', '/Ab', '/A', '/A#', '/Bb', '/B'];
+										const acordesValidos = [];
+										
+										notasBase.forEach(nota => {
+											  sufixos.forEach(sufixo => {
+												    baixos.forEach(baixo => {
+													      acordesValidos.push(nota + sufixo + baixo);
+												    });
+											  });
+										});
+										
+										const palavras = linhaTrim
+										.replace(/[()\[\],]/g, '') // remove parênteses, colchetes e vírgulas
+										.split(/\s+/);
+										const isLinhaDeAcordes = palavras.length > 0 && palavras.every(p => acordesValidos.includes(p));
+										
+										if (index === 0) {
+											return `<h5>${linhaComEspacos}</h5>`;
+											
+											} else if (isLinhaDeAcordes) {
+											
+											return `<strong class="corCifra">${linhaComEspacos}</strong>`;
+											} else {
+											return linhaComEspacos;
+										}
+										
+									}).join('<br>');
+									txtViewer.innerHTML = htmlFormatado;
+									txtViewer.scrollTop = 0;
+									document.getElementById('right-panel').scrollTop = 0;
+									
+									
+									// Extrai acordes únicos da música
+									
+									const acordesValidos = acordes.map(a => a.Nome);
+									
+									const acordesUnicos = new Set();
+									linhas.forEach(linha => {
+										const palavras = linha.replace(/[()\[\],]/g, '').split(/\s+/);
+										palavras.forEach(palavra => {
+											if (acordesValidos.includes(palavra)) {
+												acordesUnicos.add(palavra);
+											}
+										});
+									});
+									window.acordesDaMusica = Array.from(acordesUnicos); // salva globalmente
+									
+									
+									
+									
+									
+									// Define tempo de rollout com base no JSON ou calcula automaticamente
+									const tempoSalvo = globalRollouts?.[currentFile];
+									//const linhas = texto.split('\n');
+									
+									if (tempoSalvo) {
+										  document.getElementById('rollout-time').value = tempoSalvo;
+										} else {
+										  const linhasReais = Math.ceil(linhas.length / 2); // Cada 2 linhas representam 1 linha real
+										  const tempoEstimado = linhasReais * 4; // 4 segundos por linha real
+										  document.getElementById('rollout-time').value = tempoEstimado;
+									}
+									
+									// Remove marcador de todos os itens e deixa em negrito o clicado
+									document.querySelectorAll('#songList li').forEach(el => {
+										  el.innerHTML = el.textContent; // remove qualquer HTML anterior
+									});
+									li.innerHTML = '<strong style="color:red">' + li.textContent + '</strong>';
+									abrirModalCifras();										
+									// Inicia o rollout
+									startRollout(true,true);
+									
+								})
+								.catch(err => {
+									txtViewer.textContent = "Erro ao carregar o arquivo.";
+									console.error(err);
+								});
+							};
+							songList.appendChild(li);
+						}
+					});
+				})
+				.catch(error => {
+					console.error("Erro ao acessar a API do GitHub:", error);
+					document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
+				});
+				
+				// **********************************************
+				// Função para carregar comandos no modal
+				// **********************************************
+				function loadComandos() {
+					//voiceCommandWord = localStorage.getItem('voiceCommandWord') || 'sargento'; 
+					
+					comandos = [
+					  [`${voiceCommandWord} iniciar`, "Iniciar a rolagem", "btnIniciar"],
+					  [`${voiceCommandWord} pausar`, "Pausar a rolagem", "btnPausar"],
+					  [`${voiceCommandWord} continuar`, "Continuar a rolagem", "btnContinuar"],
+					  [`${voiceCommandWord} parar`, "Parar a rolagem", "btnParar"],
+					  [`${voiceCommandWord} devagar`, "Deixar a rolagem mais lenta", "btnDevagar"],
+					  [`${voiceCommandWord} rápido`, "Deixar a rolagem mais rápida", "btnRapido"],
+					  [`${voiceCommandWord} menor`, "Diminuir o tamanho da fonte", "btnMenor"],
+					  [`${voiceCommandWord} maior`, "Aumentar o tamanho da fonte", "btnMaior"],
+					  [`${voiceCommandWord} tocar xyz`, "Buscar e começar a rolagem da música xyz", ""],
+					[`${voiceCommandWord} salvar tempo`, "Salvar tempo de rolagem da música atual", "btnSalvarTempo"]
+					];
+					
+					const tbody = document.getElementById("tabComandos");
+					tbody.innerHTML = "";
+					    comandos.forEach(([comando, descricao, botao]) => {
+						      const tr = document.createElement("tr");
+						      tr.innerHTML = 
+						        `<td>${comando}</td><td>${descricao}</td>`;
+						      tbody.appendChild(tr);
+					    });
+				}
+				
+				// **********************************************
+				// Começa a observar quando o DOM estiver pronto
+				// **********************************************
+				function showSong(id) {
+					document.querySelectorAll('.song-div').forEach(div => div.classList.remove('active'));
+					document.getElementById(id).classList.add('active');
+				}
+				
+				document.getElementById('search-filter').addEventListener('input', filterSongs);
+				
+				// **********************************************
+				// Filtra musica pelo nome
+				// **********************************************
+				function filterSongs() {
+					const search = document.getElementById('search-filter').value.toLowerCase();
+					document.querySelectorAll('#songList li').forEach(item => {
+						const matchesSearch = !search || item.textContent.toLowerCase().includes(search);
+						item.style.display = matchesSearch ? '' : 'none';
+					});
+				}
+				
+				// **********************************************
+				//	Inicia o rollout 
+				// **********************************************
+				function startRollout(resetToTop = false, waitRollout = false) {
+					if (waitRollout) {
+						let waitTime = recognition ? autoStartVoiceTime * 1000 : autoStartTime * 1000;
+						if (waitTime > 0) {
+							setTimeout(() => {
+								executeRollout(resetToTop);
+							}, waitTime);
+							return;
+						}
+					}
+					executeRollout(resetToTop);
+				}
+				
+				// **********************************************
+				//	Inicia o rollout 
+				// **********************************************
+				function executeRollout(resetToTop = false) {
+					
+					const seconds = parseInt(document.getElementById('rollout-time').value) * 1000;     
+					const panel = document.getElementById('txtViewer');
+					
+					if (resetToTop) {
+						panel.scrollTop = 0;
+						document.getElementById('txtViewer').scrollTop = 0;
+					}
+					
+					scrollHeight = panel.scrollHeight - panel.clientHeight;
+					step = scrollHeight / (seconds / 100);
+					scrolled = panel.scrollTop;
+					isPaused = false;
+					
+					clearInterval(rolloutInterval);
+					
+					rolloutInterval = setInterval(() => {
+						if (scrolled >= scrollHeight || isPaused) {
+							clearInterval(rolloutInterval);
+							} else {
+							panel.scrollTop += step;
+							scrolled += step;
+						}
+					}, 100);
+				}
+				
+				// **********************************************
+				// Pausa o rollout
+				// **********************************************
+				function pauseRollout() {
+					isPaused = true;
+				}
+				
+				// **********************************************
+				// Continua o rollout
+				// **********************************************
+				function continueRollout() {
+					
+					if (!isPaused) return;
+					isPaused = false;
+					const panel = document.getElementById('txtViewer');
+					rolloutInterval = setInterval(() => {
+						if (scrolled >= scrollHeight || isPaused) {
+							clearInterval(rolloutInterval);
+							} else {
+							panel.scrollTop += step;
+							scrolled += step;
+						}
+					}, 100);
+				}
+				
+				// **********************************************
+				// Para o rollout
+				// **********************************************
+				function stopRollout() {
+					clearInterval(rolloutInterval);
+					isPaused = false;
+				}
+				
+				// **********************************************
+				// Controlador do scroll  
+				// **********************************************
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							startRollout();
+							} else {
+							stopRollout();
+						}
+					});
+					}, {
+					root: document.getElementById('right-panel'),
+					threshold: 0.5 // Ajuste a sensibilidade da visibilidade
+				});
+				
+				// **********************************************
+				// Começa a observar quando o DOM estiver pronto
+				// **********************************************
+				window.addEventListener('DOMContentLoaded', () => {
+					const target = document.getElementById('txtViewer');
+					if (target) observer.observe(target);
+				});
+				
+				// **********************************************
+				// Controla o tempo de rolagem
+				// **********************************************
+				function adjustRolloutTime(delta) {
+					const input = document.getElementById('rollout-time');
+					let current = parseInt(input.value) || 0;
+					current += delta;
+					if (current < 5) current = 5; // tempo mínimo de rolagem
+					input.value = current;
+					
+					// Se já estiver rolando, reinicia com o novo tempo
+					//	if (rolloutInterval && !isPaused) {
+					stopRollout();
+					startRollout();
+					//	}
+				}
+				
+				// **********************************************
+				// Controla o tamanho da fonte
+				// **********************************************
+				function changeFontSize(increase = true) {
+					    const viewer = document.getElementById('txtViewer');
+					    if (!viewer) return;
+					
+					    const style = window.getComputedStyle(viewer, null).getPropertyValue('font-size');
+					    const currentSize = parseFloat(style);
+					    const newSize = increase ? currentSize + 2 : currentSize - 2;
+					
+					    viewer.style.fontSize = `${newSize}px`;
+				}
+				
+				// **********************************************
+				// Upload de arquivo
+				// **********************************************
+				async function uploadToGitHub() {
+					
+					//const token = prompt("Informe seu token de acesso pessoal do GitHub:");
+					if (!myToken) {
+						alert("Token não informado.");
+						return;
+					}
+					
+					const fileInput = document.getElementById('uploadFileGitHub');
+					
+					// Define o que fazer quando o usuário escolher o arquivo
+					fileInput.onchange = function () {
+						const file = fileInput.files[0];
+						if (!file) {
+							alert("Nenhum arquivo selecionado.");
+							return;
+						}
+						
+						const reader = new FileReader();
+						reader.onload = async function (e) {
+							const content = e.target.result;
+							const base64Content = btoa(unescape(encodeURIComponent(content)));
+							//							const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${file.name}`;
+							const url = myUrl + `${file.name}`;
+							const response = await fetch(url, {
+								method: "PUT",
+								headers: {
+									autHeaders,
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									message: "Upload via página web",
+									content: base64Content
+								})
+							});
+							
+							const result = await response.json();
+							if (response.ok) {
+								alert("Arquivo salvo com sucesso!");
+								} else {
+								alert("Erro: " + result.message);
+							}
+						};
+						reader.readAsText(file);
+					};
+					
+					// Abre o seletor de arquivos
+					fileInput.click();
+				}
+				
+				// **********************************************
+				// Habilita ou desabilita o comando de voz
+				// **********************************************
+				function toggleVoiceControl() {
+					if (!recognition) {
+						const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+						recognition = new SpeechRecognition();
+						recognition.lang = 'pt-BR';
+						recognition.continuous = true;
+						recognition.interimResults = false;
+						
+						recognition.onresult = function(event) {
+							for (let i = event.resultIndex; i < event.results.length; ++i) {
+								if (event.results[i].isFinal) {
+									const command = event.results[i][0].transcript.trim().toLowerCase();
+									processVoiceCommand(command);
+								}
+							}
+						};
+						
+						recognition.onerror = function(event) {
+							console.error('Erro no reconhecimento de voz:', event.error);
+						};
+						
+						recognition.onend = function() {
+							    if (recognizing) {
+								        recognition.start(); // Reinicia automaticamente
+							    }
+						};
+					}
+					
+					if (recognizing) {
+						recognition.stop();
+						recognizing = false;
+						document.getElementById('btnVoice').classList.remove('btn-success');
+						document.getElementById('btnVoice').classList.add('btn-outline-secondary');
+						} else {
+						recognition.start();
+						recognizing = true;
+						document.getElementById('btnVoice').classList.remove('btn-outline-secondary');
+						document.getElementById('btnVoice').classList.add('btn-success');
+						
+						if (showVoiceCommandModal) {
+							abrirModalComandos();
+						}
+					}
+				}
+				
+				// **********************************************
+				// Executa o comando de voz
+				// **********************************************
+				function processVoiceCommand(command) {
+					
+					    comandos.forEach(([comando, descricao, botao]) => {
+						
+						if (command === comando) {
+							document.getElementById(botao).click();
+							return;
+						}
+					    });
+					
+					if (command.startsWith(`${voiceCommandWord} tocar`)) {
+						const songName = command.replace(`${voiceCommandWord} tocar`, '').trim();
+						const items = document.querySelectorAll('#songList li');
+						for (const item of items) {
+							if (item.textContent.toLowerCase().includes(songName)) {
+								item.click();
+								setTimeout(() => document.getElementById('btnIniciar').click(), 3000);
+								break;
+							}
+						}
+					}
+				}
+				
+				// **********************************************
+				// Abre a janela modal de comandos de voz 
+				// **********************************************
+				function abrirModalComandos() { 
+					  if (!showVoiceCommandModal) return;
+					
+					loadComandos();
+					  const modal = new bootstrap.Modal(document.getElementById('voiceCommandModal'));
+					  modal.show();
+					
+					  const checkbox = document.getElementById('naoMostrarNovamente');
+					  checkbox.checked = false;
+					
+					  checkbox.addEventListener('change', () => {
+						    showVoiceCommandModal = checkbox.checked;
+					});
+				}
+				
+				// **********************************************
+				// Carrega campos da modal de configurações 
+				// **********************************************
+				function carregarConfig() { 
+					document.getElementById('autoStartTime').value = autoStartTime;
+					document.getElementById('autoStartVoiceTime').value = autoStartVoiceTime;
+					document.getElementById('voiceCommandWord').value = voiceCommandWord;
+					document.getElementById('showVoiceCommandModal').checked = showVoiceCommandModal;
+					document.getElementById('darkModeToggle').checked = isDarkMode; 
+				}
+				
+				// **********************************************
+				// Carga após carregar a janela 
+				// **********************************************
+				document.addEventListener('DOMContentLoaded', function () {
+					// Verifica suporte ao reconhecimento de voz
+					const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+					if (!SpeechRecognition) {
+						const btnVoice = document.getElementById('btnVoice');
+						if (btnVoice) {
+							btnVoice.style.display = 'none';
+						}
+					}
+					
+					// Le as variaveis de storage local 
+					//readLocalStorage();
+					
+					
+					
+					// Aplicar modo escuro
+					//					if (isDarkMode === 'true' || isDarkMode === true) {
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					document.getElementById('darkModeToggle').addEventListener('change', function () {
+						isDarkMode = this.checked;
+						if (this.checked) {
+							document.body.classList.add('dark-mode');
+							} else {
+							document.body.classList.remove('dark-mode');
+						}
+					});
+					
+					// Salvar configurações no localStorage
+					document.getElementById('saveConfigButton').addEventListener('click', async function () {
+						autoStartTime = document.getElementById('autoStartTime').value;
+						autoStartVoiceTime = document.getElementById('autoStartVoiceTime').value;
+						voiceCommandWord = document.getElementById('voiceCommandWord').value;
+						showVoiceCommandModal = document.getElementById('showVoiceCommandModal').checked;
+						isDarkMode = document.getElementById('darkModeToggle').checked;
+						
+						// Atualiza o objeto globalConfigs
+						globalConfigs = {
+							autoStartTime: autoStartTime,
+							autoStartVoiceTime: autoStartVoiceTime,
+							voiceCommandWord: voiceCommandWord,
+							showVoiceCommandModal: showVoiceCommandModal,
+							darkMode: isDarkMode
+						};
+						
+						// Fecha o modal
+						var modalElement = document.getElementById("configModal");
+						var modalInstance = bootstrap.Modal.getInstance(modalElement);
+						modalInstance.hide();
+						
+						// Exporta para o GitHub
+						await savePlaylistGithub("Configuração");
+						
+					});
+					
+					// Aplicar configurações ao comportamento de rolagem e voz
+					function startRollout() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem
+						}, autoStartTime);
+					}
+					
+					function startRolloutByVoice() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem por voz
+						}, autoStartVoiceTime);
+					}
+					
+					// Substituir a palavra de comando de voz
+					if (typeof recognition !== 'undefined') {
+						recognition.onresult = function (event) {
+							const transcript = event.results[0][0].transcript.trim().toLowerCase();
+							if (transcript === voiceCommandWord) {
+								startRolloutByVoice();
+							}
+						};
+					}
+					
+					// Carrega o Select de Playlists 
+					//loadSelectPlaylists();
+				});
+				
+				// **********************************************
+				// Salva as edições de cifra de uma musica 
+				// **********************************************
+				async function saveChanges() {
+					//let tokenCifra = localStorage.getItem("tokenCifra");
+					
+					if (!myToken) {
+						alert("Token não informado.");
+						return;
+					}
+					
+					const content = document.getElementById('editArea').value;
+					const base64Content = btoa(unescape(encodeURIComponent(content)));
+					//					const url = `https://api.github.com/repos/${usuario}/${repositorio}/contents/${currentFile}`;
+					const url = myUrl + `${currentFile}`;
+					
+					// Primeiro, obter o SHA atual do arquivo
+					let sha;
+					try {
+						const getResponse = await fetch(url, {
+							headers: {
+								autHeaders,
+								"Accept": "application/vnd.github.v3+json"
+							}
+						});
+						
+						if (getResponse.ok) {
+							const fileData = await getResponse.json();
+							sha = fileData.sha;
+						}
+						} catch (error) {
+						console.error("Erro ao obter SHA:", error);
+						alert("Erro ao obter informações do arquivo.");
+						return;
+					}
+					
+					// Agora, fazer o PUT com o SHA (se existir)
+					const putBody = {
+						message: "Alterações via página web",
+						content: base64Content
+					};
+					
+					if (sha) {
+						putBody.sha = sha;
+					}
+					
+					const response = await fetch(url, {
+						method: "PUT",
+						headers: {
+							autHeaders,
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(putBody)
+					});
+					
+					const result = await response.json();
+					if (response.ok) {
+						alert("Alterações salvas com sucesso! Aguarde uns minutos para recarregar.");
+						document.getElementById('txtViewer').innerText = content;
+						} else {
+						alert("Erro: " + result.message);
+					}
+				}
+				
+				// **********************************************
+				// Adiciona um evento ao botão editButton para carregar o conteúdo de txtViewer em editArea
+				// **********************************************
+				document.getElementById('editButton').addEventListener('click', function () {
+					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
+				});
+				
+				// **********************************************
+				// Carrega as musicas da playlista selecionada
+				// **********************************************
+				
+				function loadSelectPlaylists() {
+					const select = document.getElementById('playlistSelect');
+					select.innerHTML = '<option value="">Todas as músicas</option>';
+					
+					// Usa diretamente a variável globalPlaylists
+					const playlists = globalPlaylists; 
+					
+					for (let name in playlists) {
+						const option = document.createElement('option');
+						option.value = name;
+						option.textContent = name;
+						select.appendChild(option);
+					}
+				}
+				
+				
+				// **********************************************
+				// Abre a janela modal de playlist
+				// **********************************************
+				function openModalPlaylist(bolCreate) {
+					const modalElement = document.getElementById("playlistModal");
+					const modal = new bootstrap.Modal(modalElement);
+					
+					if (bolCreate) {
+						const nomePlaylist = prompt("Digite o nome da nova playlist:");
+						if (nomePlaylist && nomePlaylist.trim() !== "") {
+							// Aqui você pode armazenar o nome da playlist se necessário
+							document.getElementById("playlistTitle").innerText = nomePlaylist.trim();
+							loadPlaylistModal();
+							modal.show();
+							} else {
+							alert("Nome da playlist não pode ser vazio.");
+						}
+						} else {
+						const playlistSelect = document.getElementById("playlistSelect");
+						if (!playlistSelect || !playlistSelect.value) {
+							alert("Por favor, selecione uma playlist.");
+							} else {
+							document.getElementById("playlistTitle").innerText = playlistSelect.value;
+							loadPlaylistModal();
+							modal.show();
+						}
+					}
+				}
+				
+				// **********************************************
+				// Funcao para tratar acentos 
+				// **********************************************
+				function cleanString(str) {
+					return str
+					.replace(/[\u200B-\u200D\uFEFF]/g, '') // remove caracteres invisíveis
+					.trim()
+					.normalize('NFC');
+				}
+				
+				// **********************************************
+				// Funcao para tratar acentos 
+				// **********************************************
+				async function saveMusicRollout() {
+					if (!currentFile) {
+						alert("Nenhuma música carregada.");
+						return;
+					}
+					
+					const tempo = parseInt(document.getElementById('rollout-time').value);
+					if (isNaN(tempo) || tempo <= 0) {
+						alert("Tempo inválido.");
+						return;
+					}
+					
+					  if (!globalRollouts) globalRollouts = {}; // Garante que o objeto exista
+					  globalRollouts[currentFile] = tempo;
+					
+					await savePlaylistGithub("Tempo de rolagem");
+				}
+				
+				// **********************************************
+				// Listener do select de playlists 
+				// **********************************************
+				document.getElementById('playlistSelect').addEventListener('change', function () {
+					const selectedPlaylist = this.value;
+					
+					const playlists = globalPlaylists;     
+					const songList = document.getElementById('songList');
+					const allItems = songList.querySelectorAll('li');
+					
+					if (!selectedPlaylist) {
+						allItems.forEach(item => item.style.display = '');
+						} else {
+						const songsInPlaylist = playlists[selectedPlaylist] || [];
+						
+						allItems.forEach(item => {
+							const itemName = cleanString(item.textContent);
+							const match = songsInPlaylist.some(name =>
+							cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
+							);
+							item.style.display = match ? '' : 'none';
+						});
+					}
+				});
+				
+				
+				// **********************************************
+				// Carrega playlist no modal 
+				// **********************************************
+				async function loadPlaylistModal() {
+					const songListItems = document.querySelectorAll('#songList li');
+					const songCheckboxList = document.getElementById('songCheckboxList');
+					songCheckboxList.innerHTML = '';
+					
+					const playlists = globalPlaylists;
+					const currentPlaylist = document.getElementById('playlistTitle').innerText.trim();
+					const selectedSongs = (playlists[currentPlaylist] || []).map(cleanString);
+					
+					songListItems.forEach(item => {
+						const id = cleanString(item.getAttribute('data-name'));
+						const div = document.createElement('div');
+						div.className = 'form-check';
+						
+						const checkbox = document.createElement('input');
+						checkbox.type = 'checkbox';
+						checkbox.className = 'form-check-input songCheckbox';
+						checkbox.id = 'chk_' + id;
+						checkbox.value = id;
+						checkbox.checked = selectedSongs.includes(id);
+						
+						const label = document.createElement('label');
+						label.className = 'form-check-label';
+						label.htmlFor = checkbox.id;
+						label.textContent = item.getAttribute('data-name');
+						
+						div.appendChild(checkbox);
+						div.appendChild(label);
+						songCheckboxList.appendChild(div);
+					});
+				}
+				
+				
+				// **********************************************
+				// Gera figura da cifra  
+				// **********************************************
+				function gerarCifraSVG(nota, acordes, escala = 1) {
+					let acorde = acordes.find(a => a.Nome === nota && a.Dedos);
+					vermelho = "";
+					    if (!acorde) {
+						vermelho = `style="color: red;" onclick=editarAcordePorNota(this.innerText); `;        
+						const linhas = document.getElementById("txtViewer").innerHTML
+						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
+						    .replace(/<br\s*\/?>/gi, '\n')        // converte <br> em \n
+						    .replace(/<\/?[^>]+(>|$)/g, "")       // remove tags HTML
+						    .split("\n")
+						    .map(l => l.trim());
+						const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));
+						
+						        if (indiceAcordes !== -1) {
+							            for (let i = indiceAcordes + 1; i < linhas.length; i++) {
+								                const linha = linhas[i].trim();
+								
+								                if (linha.startsWith(nota + " ")) {
+									                    const json = gerarJsonDeSelecaoComDedosFromLinha(linha); 
+									                    if (json) {
+										                        acorde = json;     
+										                        break;
+									                    }
+								                }
+							            }
+						        }
+					    }
+					
+					if (!acorde) {
+						return `<svg width="160" height="160"><text x="10" y="50">Cifra não encontrada</text></svg>`;
+					}
+					
+					const espacamentoBase = 20;
+					const espacamento = espacamentoBase * escala;
+					const cordas = 6;
+					const casas = 5;
+					const largura = espacamento * (cordas - 1) + 2 * espacamento;
+					const altura = espacamento * casas + 2 * espacamento;
+					
+					let svg = `<svg width="${largura}" height="${altura}" xmlns="http://www.w3.org/2000/svg">`;
+					
+					// Cordas usadas (X e O)
+					if (acorde.CordasUsadas) {
+						acorde.CordasUsadas.forEach((valor, i) => {
+							if (valor === "X" || valor === "0") {
+								const x = espacamento + i * espacamento;
+								svg += `<text x="${x}" y="${espacamento * 0.8}" font-size="${20 * escala}" text-anchor="middle">${valor}</text>`;
+							}
+						});
+					}
+					
+					// Linhas verticais (cordas)
+					for (let i = 0; i < cordas; i++) {
+						const x = espacamento + i * espacamento;
+						svg += `<line x1="${x}" y1="${espacamento}" x2="${x}" y2="${espacamento * (casas + 1)}" stroke="black"/>`;
+					}
+					
+					// Linha horizontal superior (mais grossa)
+					svg += `<line x1="${espacamento}" y1="${espacamento}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${espacamento}" stroke="black" stroke-width="${4 * escala}"/>`;
+					
+					// Linhas horizontais (casas)
+					for (let i = 1; i <= casas; i++) {
+						const y = espacamento + i * espacamento;
+						svg += `<line x1="${espacamento}" y1="${y}" x2="${espacamento * (cordas - 1) + espacamento}" y2="${y}" stroke="black"/>`;
+					}
+					
+					// Dedos
+					acorde.Dedos.forEach(dedo => {
+						const y = espacamento + (dedo.Casa - acorde.CasaInicial + 1) * espacamento - espacamento / 2;
+						if (dedo.Pestana) {
+							const xInicio = espacamento;
+							const larguraPestana = espacamento * (cordas - 1);
+							svg += `<rect x="${xInicio - 6 * escala}" y="${y - 6 * escala}" width="${larguraPestana + 12 * escala}" height="${12 * escala}" rx="${4 * escala}" fill="black"/>`;
+							} else {
+							const x = espacamento + (6 - dedo.Corda) * espacamento;
+							svg += `<circle cx="${x}" cy="${y}" r="${6 * escala}" fill="black"/>`;
+						}
+					});
+					
+					svg += `</svg>`;
+					return svg;
+				}
+				
+				// **********************************************
+				// Abre o modal de cifras   
+				// **********************************************
+				function abrirModalCifras() {
+					const container = document.getElementById("cifraContainer");
+					container.innerHTML = "";
+					
+					if (!window.acordesDaMusica || window.acordesDaMusica.length === 0) {
+						container.innerHTML = "<p>Nenhuma cifra encontrada.</p>";
+						return;
+					}
+					
+					window.acordesDaMusica.forEach(nota => {
+						const svg = gerarCifraSVG(nota, acordes, 0.5);
+						const div = document.createElement("div");
+						div.innerHTML = `${svg}<strong ${vermelho} class="text-center">&nbsp;${nota}</strong>`;
+						div.classList.add("mb-4", "cifra-coluna");
+						container.appendChild(div);
+					});
+					
+					//		const modal = new bootstrap.Modal(document.getElementById("modCifra"));
+					//		modal.show();
+				}				
+				
+				// **********************************************
+				// Gera json de nota a partir de seleção na tela    
+				// **********************************************
+				function gerarJsonDeSelecaoComDedos() {
+					const viewer = document.getElementById("txtViewer");
+					const selection = window.getSelection();
+					const selectedText = selection.toString().trim();
+					
+					if (!selectedText || !selectedText.includes("=")) {
+						alert("Selecione um trecho no formato: Nota = X 0 2 1 2 0");
+						return;
+					}
+					
+					const [nota, valores] = selectedText.split("=");
+					const nome = nota.trim();
+					const cordas = valores.trim().split(/\s+/);
+					
+					if (cordas.length !== 6) {
+						alert("Formato inválido. São necessárias 6 cordas.");
+						return;
+					}
+					
+					const dedos = [];
+					cordas.forEach((valor, index) => {
+						const casa = parseInt(valor);
+						if (!isNaN(casa) && casa > 0) {
+							dedos.push({
+								Numero: dedos.length + 1,
+								Pestana: false,
+								Corda: 6 - index,
+								Casa: casa
+							});
+						}
+					});
+					
+					const json = {
+						Id: Date.now(),
+						Nome: nome,
+						CasaInicial: 1,
+						Dedos: dedos,
+						CordasUsadas: cordas
+					};
+					
+					alert(JSON.stringify(json, null, 2));
+				}
+				
+				// **********************************************
+				// Gera json de nota a partir de uma linha localizada    
+				// **********************************************
+				function gerarJsonDeSelecaoComDedosFromLinha(linha) {   
+					const [nota, valoresRaw] = linha.split("=");
+					if (!nota || !valoresRaw) return null;
+					
+					const nome = nota.trim();
+					const partes = valoresRaw.trim().split(/\s+/);
+					
+					if (partes.length < 6) return null;
+					
+					const cordas = partes.slice(0, 6);
+					const pestanaInfo = partes.find(p => /^P\d+$/.test(p));
+					const casaPestana = pestanaInfo ? parseInt(pestanaInfo.substring(1)) : null;
+					
+					const dedos = [];
+					cordas.forEach((valor, index) => {
+						const casa = parseInt(valor);
+						if (!isNaN(casa) && casa > 0) {
+							dedos.push({
+								Numero: dedos.length + 1,
+								Pestana: casaPestana !== null && casa === casaPestana,
+								Corda: 6 - index,
+								Casa: casa
+							});
+						}
+					});
+					
+					return {
+						Id: Date.now(),
+						Nome: nome,
+						CasaInicial: 1,
+						Dedos: dedos,
+						CordasUsadas: cordas
+					};
+				}
+				
+				// **********************************************
+				// Mostra ou oculta a divisão de cifras    
+				// **********************************************
+				function toggleCifras() {
+					const painel = document.getElementById("painelCifras");
+					const rightPanel = document.getElementById("right-panel");
+					
+					if (!painel || !rightPanel) return;
+					
+					const isVisible = painel.style.display !== "none";
+					
+					// Alterna visibilidade do painel de cifras
+					painel.style.display = isVisible ? "none" : "block";
+					
+					// Ajusta a largura do painel direito
+					rightPanel.classList.remove("col-md-7", "col-md-9");
+					rightPanel.classList.add(isVisible ? "col-md-9" : "col-md-7");
+					
+					// Se estiver sendo exibido, atualiza as cifras
+					if (!isVisible) {
+						abrirModalCifras();
+					}
+				}
+				
+				
+				
+				
+				
+				async function salvarAcordeNoGitHub(novoAcorde) {
+					const url = myUrl + 'acordes.js';
+					
+					try {
+						const response = await fetch(url, { headers: autHeaders });
+						const data = await response.json();
+						const sha = data.sha;
+						
+						const decoded = atob(data.content);
+						const match = decoded.match(/let\\s+acordes\\s*=\\s*(\\[.*\\]);?/s);
+						if (!match) {
+							alert("Formato inesperado em acordes.js");
+							return;
+						}
+						
+						const acordesArray = JSON.parse(match[1]);
+						
+						const jaExiste = acordesArray.some(a => a.Nome === novoAcorde.Nome);
+						if (jaExiste) return;
+						
+						acordesArray.push(novoAcorde);
+						
+						const novoConteudo = `let acordes = ${JSON.stringify(acordesArray, null, 2)};`;
+						const base64Content = btoa(unescape(encodeURIComponent(novoConteudo)));
+						
+						const putResponse = await fetch(url, {
+							method: 'PUT',
+							headers: {
+								...autHeaders,
+								"Content-Type": "application/json"
+							},
+							body: JSON.stringify({
+								message: `Adiciona acorde ${novoAcorde.Nome}`,
+								content: base64Content,
+								sha: sha
+							})
+						});
+						
+						if (putResponse.ok) {
+							alert(`Acorde ${novoAcorde.Nome} salvo com sucesso!`);
+							} else {
+							const result = await putResponse.json();
+							alert("Erro ao salvar acorde: " + result.message);
+						}
+						
+						} catch (error) {
+						console.error("Erro ao salvar acorde:", error);
+						alert("Erro ao salvar acorde.");
+					}
+				}
+
+
+
+async function editarAcordePorNota(notaParm) {
+	
+						const nota = notaParm.trim();
+						const linhas = document.getElementById("txtViewer").innerHTML
+						    .replace(/&nbsp;/g, ' ')              // converte &nbsp; em espaço
+						    .replace(/<br\s*\/?>/gi, '\n')        // converte <br> em \n
+						    .replace(/<\/?[^>]+(>|$)/g, "")       // remove tags HTML
+						    .split("\n")
+						    .map(l => l.trim());	
+	
+	
+  //const linhas = document.getElementById("txtViewer").innerText.split("\n").map(l => l.trim());
+  const indiceAcordes = linhas.findIndex(l => l.includes("------ Acordes -----"));   
+  let acordeJson = null;
+
+  if (indiceAcordes !== -1) {
+    for (let i = indiceAcordes + 1; i < linhas.length; i++) {
+      const linha = linhas[i];                              
+      if (linha.startsWith(nota + " ")) {                   
+        acordeJson = gerarJsonDeSelecaoComDedosFromLinha(linha);
+        break;
+      }
+    }
+  }
+
+  if (!acordeJson) {
+    alert("Cifra para a nota não encontrada no texto.");
+    return;
+  }
+
+  // Preenche o modal com o JSON
+  document.getElementById("jsonAcordeEditor").value = JSON.stringify(acordeJson, null, 2);
+
+  // Mostra o modal
+  const modal = new bootstrap.Modal(document.getElementById("modalEditarAcorde"));
+  modal.show();
+
+  // Define o comportamento do botão de salvar
+  document.getElementById("btnSalvarAcordeJson").onclick = async () => {
+    try {
+      const jsonEditado = JSON.parse(document.getElementById("jsonAcordeEditor").value);
+      const indexExistente = acordes.findIndex(a => a.Nome === nota);
+
+      if (indexExistente === -1) {
+        acordes.push(jsonEditado);
+      } else {
+        acordes[indexExistente] = jsonEditado;
+      }
+
+      // Atualiza acordes.js no GitHub
+      const url = myUrl + 'acordes.js';
+      const response = await fetch(url, { headers: autHeaders });
+      const data = await response.json();
+      const sha = data.sha;
+
+      const novoConteudo = `let acordes = ${JSON.stringify(acordes, null, 2)};`;
+      const base64Content = btoa(unescape(encodeURIComponent(novoConteudo)));
+
+      const putResponse = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          ...autHeaders,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: `Atualiza acorde ${nota}`,
+          content: base64Content,
+          sha: sha
+        })
+      });
+
+      if (putResponse.ok) {
+        alert(`Acorde ${nota} salvo com sucesso!`);
+        modal.hide();
+      } else {
+        const result = await putResponse.json();
+        alert("Erro ao salvar acorde: " + result.message);
+      }
+    } catch (e) {
+      alert("Erro ao processar JSON: " + e.message);
+    }
+  };
+}
+
+
+
+
+			</script>			
+		</div>
+	</body>
+</html>
