@@ -541,7 +541,9 @@
 					
 					if (!putResponse.ok) {
 						alert('Erro ao salvar ' + tipo + ' no Github.');
-						} else {
+					} else {
+					        const responseData = await putResponse.json();
+					        playlistsSha = responseData.content.sha; // Atualiza o SHA global
 						alert(tipo + ' exportada com sucesso');
 					}
 				}
