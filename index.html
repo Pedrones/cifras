@@ -138,17 +138,14 @@
 			display: none; /* opcional: remove o fundo escuro */
 			}
 			
-			
-			
-			
 		</style>
-		
-		
 	</head>
 	<body>
 		<div class="container-fluid">
 			<div class="row">
+				<!-- ----------------------------------------------- -->
 				<!-- Painel Esquerdo -->
+				<!-- ----------------------------------------------- -->
 				<div class="col-md-3 p-3" id="left-panel">
 					<div style="display:none">
 						<!-- Abas -->
@@ -206,7 +203,9 @@
 					<ul class="list-group" id="songList" style="font-size: 12px;">
 					</ul>
 				</div>
-				<!-- Painel Direito -->
+				<!-- ----------------------------------------------- -->
+				<!-- Painel Central -->
+				<!-- ----------------------------------------------- -->
 				<div class="col-md-7" id="right-panel">
 					<!-- Botões de controle -->
 					<div id="divControle">
@@ -245,20 +244,14 @@
 						<div id="txtViewer"></div>
 					</div>
 				</div>
-				
+				<!-- ----------------------------------------------- -->
+				<!-- Painel de cifras                                -->
+				<!-- ----------------------------------------------- -->
 				<div class="col-md-2" id="painelCifras" >
-					
-					
 					<div class="modal-body" id="cifraContainer">
 						<!-- SVGs das cifras serão inseridos aqui -->
 					</div>
 				</div>
-				
-				
-				
-				
-				
-				
 			</div>
 			<!-- ----------------------------------------------- -->
 			<!-- Modal para exibir mapeamento de comandos -->
@@ -384,8 +377,6 @@
 					</div>
 				</div>
 			</div>
-			
-			
 			<!-- ----------------------------------------------- -->
 			<!-- Modal de Cifras -->
 			<!-- ----------------------------------------------- -->
@@ -428,9 +419,7 @@
 			
 			
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-			
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-			
 			<script src="acordes.js"></script>
 			<script>
 				// **********************************************
@@ -468,158 +457,26 @@
 				    let autoStartNextTime = 5; // Tempo de espera em segundos para tocar proxima música 
 				let isAutoPlaying = false;
 				let idxMusicaAtual = -1;
-				
-				// ************************************
-				// Lê playlists e config do GitHub
-				// ************************************
-				async function loadGlobalPlaylists() {
-					const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
-						headers: autHeaders
-					});
-					const data = await response.json();
-					playlistsSha = data.sha;
-					
-					// Decodificação correta em UTF-8
-					const binary = atob(data.content);
-					const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-					const decodedContent = new TextDecoder('utf-8').decode(bytes);     
-					
-					const parsedData = JSON.parse(decodedContent);
-					
-					globalPlaylists = parsedData.playlists;          
-					globalConfigs = parsedData.configuracoes;
-					globalRollouts = parsedData.rollouts
-					
-					autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
-					autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
-					autoStartNextTime = parseInt(globalConfigs.autoStartNextTime ?? '5', 10);
-					voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
-					
-					// Conversão segura de string para booleano
-					showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
-					isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
-					
-					// Aplica o modo escuro aqui
-					if (isDarkMode) {
-						document.body.classList.add('dark-mode');
-						document.getElementById('darkModeToggle').checked = true;
-					}
-					
-					// Carrega os campos do modal de configurações 
-					carregarConfig();	
-					// Carrega select de Playlists
-					loadSelectPlaylists();
-				}
-				
-				
-				// ************************************
-				// Salva playlists e config no github
-				// ************************************
-				async function savePlaylistGithub(tipo) {
-					if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
-						alert("Token ou SHA não disponíveis para salvar no Github.");
-						return;
-					}
-					
-					const fullData = {
-						playlists: globalPlaylists,
-						configuracoes: globalConfigs,
-						rollouts: globalRollouts
-					};
-					
-					const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
-					
-					const putResponse = await fetch(myUrl + 'playlists.json', {
-						method: 'PUT',
-						headers: autHeaders,
-						body: JSON.stringify({
-							message: `Atualiza ${tipo} via variável global`,
-							content: encodedContent,
-							sha: playlistsSha
-						})
-					});
-					
-					if (!putResponse.ok) {
-						alert('Erro ao salvar ' + tipo + ' no Github.');
-					} else {
-					        const responseData = await putResponse.json();
-					        playlistsSha = responseData.content.sha; // Atualiza o SHA global
-						alert(tipo + ' exportada com sucesso');
-					}
-				}
-				
-				// ************************************
-				// Chama a carga da playlist ao carregar o documento
-				// ************************************
-				window.addEventListener('DOMContentLoaded', async () => {
-					await loadGlobalPlaylists();
-					// ... outras inicializações
-				});
-				
-				// ************************************
-				// Função para salvar a playlist na variavel
-				// ************************************
-				async function savePlaylistLocal() {
-					const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
-					const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
-					globalPlaylists[selectedPlaylist] = selectedSongs;  
-					document.getElementById("btnFechaPlaylist").click();
-					document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
-					//alert("Playlist atualizada na variável global.");
-					// Chamada assíncrona sem aguardar
-					await savePlaylistGithub('Playlist');
-					
-				}
-				
-				
+				// Cabeçalhos de autenticação
 				const tokenEncoded = "U2FsdGVkX1+dYyB3Cx6pbh4gz9Nh0446DTxLwkTjMx8zy7vx8MxKptdpurfd6SNFCvYyLj37VnrJXk5QarsmtQ==";
 				let myToken = localStorage.getItem("tokenCifra");
+				let autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+				let myUrl = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
 				
-				async function solicitarSenha() {
-					while (true) {
-						const senha = prompt("Informe a senha para descriptografar o token:");
-						if (senha === null) {
-							alert("Senha não informada. Algumas funcionalidades podem não estar disponíveis.");
-							return null;
-						}
-						
-						try {
-							const bytes = CryptoJS.AES.decrypt(tokenEncoded, senha);
-							const token = bytes.toString(CryptoJS.enc.Utf8);
-							
-							if (token && token.startsWith("ghp_")) {
-								localStorage.setItem("tokenCifra", token);
-								return token;
-								} else {
-								alert("Senha incorreta. Por favor, tente novamente.");
-								localStorage.removeItem("tokenCifra");
-							}
-							} catch (e) {
-							alert("Erro ao tentar descriptografar. Tente novamente.");
-							localStorage.removeItem("tokenCifra");
-						}
-					}
-				}
-				
+				// ************************************
+				// Se não tiver senha, solicita
+				// ************************************
 				(async () => {
 					if (!myToken) {
 						myToken = await solicitarSenha();
 					}
-					
-					//const autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
-					//console.log("Cabeçalhos de autenticação:", autHeaders);
-					
-					// Aqui você pode continuar com funcionalidades limitadas, se necessário
 				})();
 				
-				
-				
-				
-				// Cabeçalhos de autenticação
-				let autHeaders = myToken ? { "Authorization": "Bearer " + myToken } : {};
+				// ************************************
+				// Busca arquivos txt 
+				// ************************************
 				
 				// Busca os arquivos .txt 
-				let myUrl = `https://api.github.com/repos/${usuario}/${repositorio}/contents/`;
 				fetch(myUrl, {
 					  headers: autHeaders
 				})
@@ -711,10 +568,6 @@
 									});
 									window.acordesDaMusica = Array.from(acordesUnicos); // salva globalmente
 									
-									
-									
-									
-									
 									// Define tempo de rollout com base no JSON ou calcula automaticamente
 									const tempoSalvo = globalRollouts?.[currentFile];
 									//const linhas = texto.split('\n');
@@ -750,6 +603,129 @@
 					console.error("Erro ao acessar a API do GitHub:", error);
 					document.getElementById('txtViewer').textContent = "Erro ao carregar lista de arquivos.";
 				});
+				
+				// ************************************
+				// Lê playlists e config do GitHub
+				// ************************************
+				async function loadGlobalPlaylists() {
+					const response = await fetch(myUrl + 'playlists.json?nocache=' + new Date().getTime(), {
+						headers: autHeaders
+					});
+					const data = await response.json();
+					playlistsSha = data.sha;
+					
+					// Decodificação correta em UTF-8
+					const binary = atob(data.content);
+					const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+					const decodedContent = new TextDecoder('utf-8').decode(bytes);     
+					
+					const parsedData = JSON.parse(decodedContent);
+					
+					globalPlaylists = parsedData.playlists;          
+					globalConfigs = parsedData.configuracoes;
+					globalRollouts = parsedData.rollouts
+					
+					autoStartTime = parseInt(globalConfigs.autoStartTime ?? '5', 10);
+					autoStartVoiceTime = parseInt(globalConfigs.autoStartVoiceTime ?? '5', 10);
+					autoStartNextTime = parseInt(globalConfigs.autoStartNextTime ?? '5', 10);
+					voiceCommandWord = globalConfigs.voiceCommandWord || 'sargento';
+					
+					// Conversão segura de string para booleano
+					showVoiceCommandModal = String(globalConfigs.showVoiceCommandModal).toLowerCase() === 'true';
+					isDarkMode = String(globalConfigs.darkMode).toLowerCase() === 'true';
+					
+					// Aplica o modo escuro aqui
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					// Carrega os campos do modal de configurações 
+					carregarConfig();	
+					// Carrega select de Playlists
+					loadSelectPlaylists();
+				}
+				
+				
+				// ************************************
+				// Salva playlists e config no github
+				// ************************************
+				async function savePlaylistGithub(tipo) {
+					if (!myToken || !playlistsSha) {  // || !globalPlaylists) {
+						alert("Token ou SHA não disponíveis para salvar no Github.");
+						return;
+					}
+					
+					const fullData = {
+						playlists: globalPlaylists,
+						configuracoes: globalConfigs,
+						rollouts: globalRollouts
+					};
+					
+					const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(fullData))));
+					
+					const putResponse = await fetch(myUrl + 'playlists.json', {
+						method: 'PUT',
+						headers: autHeaders,
+						body: JSON.stringify({
+							message: `Atualiza ${tipo} via variável global`,
+							content: encodedContent,
+							sha: playlistsSha
+						})
+					});
+					
+					if (!putResponse.ok) {
+						alert('Erro ao salvar ' + tipo + ' no Github.');
+						} else {
+						        const responseData = await putResponse.json();
+						        playlistsSha = responseData.content.sha; // Atualiza o SHA global
+						alert(tipo + ' exportada com sucesso');
+					}
+				}
+				
+				// ************************************
+				// Função para salvar a playlist na variavel
+				// ************************************
+				async function savePlaylistLocal() {
+					const selectedPlaylist = document.getElementById('playlistTitle').innerText.trim();  
+					const selectedSongs = Array.from(document.querySelectorAll('.songCheckbox:checked')).map(cb => cb.value);
+					globalPlaylists[selectedPlaylist] = selectedSongs;  
+					document.getElementById("btnFechaPlaylist").click();
+					document.querySelector('#playlistSelect').dispatchEvent(new Event('change'));
+					//alert("Playlist atualizada na variável global.");
+					// Chamada assíncrona sem aguardar
+					await savePlaylistGithub('Playlist');
+					
+				}
+				
+				// ************************************
+				// Solicita senha para key criptografada
+				// ************************************
+				async function solicitarSenha() {
+					while (true) {
+						const senha = prompt("Informe a senha para descriptografar o token:");
+						if (senha === null) {
+							alert("Senha não informada. Algumas funcionalidades podem não estar disponíveis.");
+							return null;
+						}
+						
+						try {
+							const bytes = CryptoJS.AES.decrypt(tokenEncoded, senha);
+							const token = bytes.toString(CryptoJS.enc.Utf8);
+							
+							if (token && token.startsWith("ghp_")) {
+								localStorage.setItem("tokenCifra", token);
+								return token;
+								} else {
+								alert("Senha incorreta. Por favor, tente novamente.");
+								localStorage.removeItem("tokenCifra");
+							}
+							} catch (e) {
+							alert("Erro ao tentar descriptografar. Tente novamente.");
+							localStorage.removeItem("tokenCifra");
+						}
+					}
+				}
 				
 				// **********************************************
 				// Função para carregar comandos no modal
@@ -896,13 +872,6 @@
 					threshold: 0.5 // Ajuste a sensibilidade da visibilidade
 				});
 				
-				// **********************************************
-				// Começa a observar quando o DOM estiver pronto
-				// **********************************************
-				window.addEventListener('DOMContentLoaded', () => {
-					const target = document.getElementById('txtViewer');
-					if (target) observer.observe(target);
-				});
 				
 				// **********************************************
 				// Controla o tempo de rolagem
@@ -1093,96 +1062,6 @@
 				}
 				
 				// **********************************************
-				// Carga após carregar a janela 
-				// **********************************************
-				document.addEventListener('DOMContentLoaded', function () {
-					// Verifica suporte ao reconhecimento de voz
-					const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-					if (!SpeechRecognition) {
-						const btnVoice = document.getElementById('btnVoice');
-						if (btnVoice) {
-							btnVoice.style.display = 'none';
-						}
-					}
-					
-					// Le as variaveis de storage local 
-					//readLocalStorage();
-					
-					
-					
-					// Aplicar modo escuro
-					//					if (isDarkMode === 'true' || isDarkMode === true) {
-					if (isDarkMode) {
-						document.body.classList.add('dark-mode');
-						document.getElementById('darkModeToggle').checked = true;
-					}
-					
-					document.getElementById('darkModeToggle').addEventListener('change', function () {
-						isDarkMode = this.checked;
-						if (this.checked) {
-							document.body.classList.add('dark-mode');
-							} else {
-							document.body.classList.remove('dark-mode');
-						}
-					});
-					
-					// Salvar configurações no localStorage
-					document.getElementById('saveConfigButton').addEventListener('click', async function () {
-						autoStartTime = document.getElementById('autoStartTime').value;
-						autoStartVoiceTime = document.getElementById('autoStartVoiceTime').value;
-						autoStartNextTime = document.getElementById('autoStartNextTime').value;
-						voiceCommandWord = document.getElementById('voiceCommandWord').value;
-						showVoiceCommandModal = document.getElementById('showVoiceCommandModal').checked;
-						isDarkMode = document.getElementById('darkModeToggle').checked;
-						
-						// Atualiza o objeto globalConfigs
-						globalConfigs = {
-							autoStartTime: autoStartTime,
-							autoStartVoiceTime: autoStartVoiceTime,
-							autoStartNextTime: autoStartNextTime,
-							voiceCommandWord: voiceCommandWord,
-							showVoiceCommandModal: showVoiceCommandModal,
-							darkMode: isDarkMode
-						};
-						
-						// Fecha o modal
-						var modalElement = document.getElementById("configModal");
-						var modalInstance = bootstrap.Modal.getInstance(modalElement);
-						modalInstance.hide();
-						
-						// Exporta para o GitHub
-						await savePlaylistGithub("Configuração");
-						
-					});
-					
-					// Aplicar configurações ao comportamento de rolagem e voz
-					function startRollout() {
-						setTimeout(function () {
-							// Código para iniciar a rolagem
-						}, autoStartTime);
-					}
-					
-					function startRolloutByVoice() {
-						setTimeout(function () {
-							// Código para iniciar a rolagem por voz
-						}, autoStartVoiceTime);
-					}
-					
-					// Substituir a palavra de comando de voz
-					if (typeof recognition !== 'undefined') {
-						recognition.onresult = function (event) {
-							const transcript = event.results[0][0].transcript.trim().toLowerCase();
-							if (transcript === voiceCommandWord) {
-								startRolloutByVoice();
-							}
-						};
-					}
-					
-					// Carrega o Select de Playlists 
-					//loadSelectPlaylists();
-				});
-				
-				// **********************************************
 				// Salva as edições de cifra de uma musica 
 				// **********************************************
 				async function saveChanges() {
@@ -1246,17 +1125,10 @@
 					}
 				}
 				
-				// **********************************************
-				// Adiciona um evento ao botão editButton para carregar o conteúdo de txtViewer em editArea
-				// **********************************************
-				document.getElementById('editButton').addEventListener('click', function () {
-					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
-				});
 				
 				// **********************************************
 				// Carrega as musicas da playlista selecionada
 				// **********************************************
-				
 				function loadSelectPlaylists() {
 					const select = document.getElementById('playlistSelect');
 					select.innerHTML = '<option value="">Todas as músicas</option>';
@@ -1271,7 +1143,6 @@
 						select.appendChild(option);
 					}
 				}
-				
 				
 				// **********************************************
 				// Abre a janela modal de playlist
@@ -1332,31 +1203,6 @@
 					
 					await savePlaylistGithub("Tempo de rolagem");
 				}
-				
-				// **********************************************
-				// Listener do select de playlists 
-				// **********************************************
-				document.getElementById('playlistSelect').addEventListener('change', function () {
-					const selectedPlaylist = this.value;
-					
-					const playlists = globalPlaylists;     
-					const songList = document.getElementById('songList');
-					const allItems = songList.querySelectorAll('li');
-					
-					if (!selectedPlaylist) {
-						allItems.forEach(item => item.style.display = '');
-						} else {
-						const songsInPlaylist = playlists[selectedPlaylist] || [];
-						
-						allItems.forEach(item => {
-							const itemName = cleanString(item.textContent);
-							const match = songsInPlaylist.some(name =>
-							cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
-							);
-							item.style.display = match ? '' : 'none';
-						});
-					}
-				});
 				
 				
 				// **********************************************
@@ -1515,8 +1361,6 @@
 						container.appendChild(div);
 					});
 					
-					//		const modal = new bootstrap.Modal(document.getElementById("modCifra"));
-					//		modal.show();
 				}				
 				
 				// **********************************************
@@ -1720,7 +1564,7 @@
 					// Preenche o modal com o JSON
 					document.getElementById("jsonAcordeEditor").value = JSON.stringify(acordeJson, null, 2);
 					
-					// Mostra o modal
+					// Mostra o modal de acordes 
 					const modal = new bootstrap.Modal(document.getElementById("modalEditarAcorde"));
 					modal.show();
 					
@@ -1768,7 +1612,9 @@
 					};
 				}
 				
-				
+				// **********************************************
+				// Alterna o modo de reprodução automática   
+				// **********************************************
 				function togglePlaybackMode() {
 					if (playbackMode === 'manual') {
 						playbackMode = 'sequencial';
@@ -1788,6 +1634,9 @@
 					}
 				}
 				
+				// **********************************************
+				// Toca a próxima música   
+				// **********************************************
 				function playNextSong() {
 					if (!isAutoPlaying) return;
 					if (playbackMode === 'sequencial') {
@@ -1807,6 +1656,9 @@
 					}
 				}
 				
+				// **********************************************
+				// Obtem proxima música a ser tocada   
+				// **********************************************
 				function getNextSongElement() {
 					const songElements = document.querySelectorAll('#songList .list-group-item');
 					if (songElements.length > 0) {
@@ -1817,6 +1669,9 @@
 					return null;
 				}
 				
+				// **********************************************
+				// Obtem a proxima música aleatória a ser tocada    
+				// **********************************************
 				function getRandomSongElement() {
 					const songElements = document.querySelectorAll('#songList .list-group-item');
 					if (songElements.length > 0) {
@@ -1827,6 +1682,141 @@
 				}
 				
 				
+				
+				// **********************************************
+				// Carga dos listeners    
+				// **********************************************
+				// ************************************
+				// Chama a carga da playlist ao carregar o documento
+				// ************************************
+				window.addEventListener('DOMContentLoaded', async () => {
+					await loadGlobalPlaylists();
+					// ... outras inicializações
+				});
+				
+				// **********************************************
+				// Começa a observar quando o DOM estiver pronto
+				// **********************************************
+				window.addEventListener('DOMContentLoaded', () => {
+					const target = document.getElementById('txtViewer');
+					if (target) observer.observe(target);
+				});
+				// **********************************************
+				// Listener do select de playlists 
+				// **********************************************
+				// **********************************************
+				// Carga após carregar a janela 
+				// **********************************************
+				document.addEventListener('DOMContentLoaded', function () {
+					// Verifica suporte ao reconhecimento de voz
+					const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+					if (!SpeechRecognition) {
+						const btnVoice = document.getElementById('btnVoice');
+						if (btnVoice) {
+							btnVoice.style.display = 'none';
+						}
+					}
+					
+					// Aplicar modo escuro
+					if (isDarkMode) {
+						document.body.classList.add('dark-mode');
+						document.getElementById('darkModeToggle').checked = true;
+					}
+					
+					document.getElementById('darkModeToggle').addEventListener('change', function () {
+						isDarkMode = this.checked;
+						if (this.checked) {
+							document.body.classList.add('dark-mode');
+							} else {
+							document.body.classList.remove('dark-mode');
+						}
+					});
+					
+					// Salvar configurações no localStorage
+					document.getElementById('saveConfigButton').addEventListener('click', async function () {
+						autoStartTime = document.getElementById('autoStartTime').value;
+						autoStartVoiceTime = document.getElementById('autoStartVoiceTime').value;
+						autoStartNextTime = document.getElementById('autoStartNextTime').value;
+						voiceCommandWord = document.getElementById('voiceCommandWord').value;
+						showVoiceCommandModal = document.getElementById('showVoiceCommandModal').checked;
+						isDarkMode = document.getElementById('darkModeToggle').checked;
+						
+						// Atualiza o objeto globalConfigs
+						globalConfigs = {
+							autoStartTime: autoStartTime,
+							autoStartVoiceTime: autoStartVoiceTime,
+							autoStartNextTime: autoStartNextTime,
+							voiceCommandWord: voiceCommandWord,
+							showVoiceCommandModal: showVoiceCommandModal,
+							darkMode: isDarkMode
+						};
+						
+						// Fecha o modal
+						var modalElement = document.getElementById("configModal");
+						var modalInstance = bootstrap.Modal.getInstance(modalElement);
+						modalInstance.hide();
+						
+						// Exporta para o GitHub
+						await savePlaylistGithub("Configuração");
+						
+					});
+					
+					// Aplicar configurações ao comportamento de rolagem e voz
+					function startRollout() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem
+						}, autoStartTime);
+					}
+					
+					function startRolloutByVoice() {
+						setTimeout(function () {
+							// Código para iniciar a rolagem por voz
+						}, autoStartVoiceTime);
+					}
+					
+					// Substituir a palavra de comando de voz
+					if (typeof recognition !== 'undefined') {
+						recognition.onresult = function (event) {
+							const transcript = event.results[0][0].transcript.trim().toLowerCase();
+							if (transcript === voiceCommandWord) {
+								startRolloutByVoice();
+							}
+						};
+					}
+					
+					// Carrega o Select de Playlists 
+					//loadSelectPlaylists();
+				});
+				
+				
+				// **********************************************
+				// Adiciona um evento ao botão editButton para carregar o conteúdo de txtViewer em editArea
+				// **********************************************
+				document.getElementById('editButton').addEventListener('click', function () {
+					    document.getElementById('editArea').value = document.getElementById('txtViewer').innerText;
+				});
+				
+				document.getElementById('playlistSelect').addEventListener('change', function () {
+					const selectedPlaylist = this.value;
+					
+					const playlists = globalPlaylists;     
+					const songList = document.getElementById('songList');
+					const allItems = songList.querySelectorAll('li');
+					
+					if (!selectedPlaylist) {
+						allItems.forEach(item => item.style.display = '');
+						} else {
+						const songsInPlaylist = playlists[selectedPlaylist] || [];
+						
+						allItems.forEach(item => {
+							const itemName = cleanString(item.textContent);
+							const match = songsInPlaylist.some(name =>
+							cleanString(name).localeCompare(itemName, 'pt-BR', { sensitivity: 'accent' }) === 0
+							);
+							item.style.display = match ? '' : 'none';
+						});
+					}
+				});
 				
 				
 				document.getElementById('txtViewer').addEventListener('scroll', function() {
