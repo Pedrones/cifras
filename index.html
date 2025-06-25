@@ -1082,7 +1082,7 @@
 					try {
 						const getResponse = await fetch(url, {
 							headers: {
-								autHeaders,
+								"Authorization": `Bearer ${myToken}`,
 								"Accept": "application/vnd.github.v3+json"
 							}
 						});
@@ -1110,7 +1110,7 @@
 					const response = await fetch(url, {
 						method: "PUT",
 						headers: {
-							autHeaders,
+							"Authorization": `Bearer ${myToken}`,
 							"Content-Type": "application/json"
 						},
 						body: JSON.stringify(putBody)
