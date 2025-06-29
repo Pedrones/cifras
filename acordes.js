@@ -28197,6 +28197,18 @@ let acordes = [
         "Pestana": false,
         "Corda": 5,
         "Casa": 2
+      },
+      {
+        "Numero": 3,
+        "Pestana": false,
+        "Corda": 4,
+        "Casa": 2
+      },
+      {
+        "Numero": 4,
+        "Pestana": false,
+        "Corda": 2,
+        "Casa": 3
       }
     ],
     "CordasUsadas": [
