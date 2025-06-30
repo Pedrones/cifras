@@ -76300,10 +76300,42 @@ let acordes = [
   {
     "Id": 9433,
     "Nome": "Bm6",
-    "CasaInicial": null,
-    "CordaInicial": null,
-    "Dedos": null,
-    "CordasUsadas": null
+    "CasaInicial": 1,
+    "CordaInicial": 6,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": false,
+        "Corda": 3,
+        "Casa": 1
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 4,
+        "Casa": 2
+      },
+      {
+        "Numero": 3,
+        "Pestana": false,
+        "Corda": 5,
+        "Casa": 2
+      };
+      {
+        "Numero": 4,
+        "Pestana": false,
+        "Corda": 2,
+        "Casa": 3
+      }
+    ],
+    "CordasUsadas": [
+      "0",
+      "2",
+      "2",
+      "1",
+      "0",
+      "0"
+    ]
   },
   {
     "Id": 9434,
@@ -79210,5 +79242,45 @@ let acordes = [
       "0",
       "0"
     ]
-  }  
+  },  
+  {
+    "Id": 9794,
+    "Nome": "E5+",
+    "CasaInicial": 1,
+    "CordaInicial": 5,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": false,
+        "Corda": 5,
+        "Casa": 1
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 4,
+        "Casa": 2
+      },
+      {
+        "Numero": 3,
+        "Pestana": false,
+        "Corda": 3,
+        "Casa": 2
+      },
+      {
+        "Numero": 4,
+        "Pestana": false,
+        "Corda": 1,
+        "Casa": 3
+      }
+    ],
+    "CordasUsadas": [
+      "1",
+      "2",
+      "2",
+      "3",
+      "0",
+      "0"
+    ]
+  }    
 ];
