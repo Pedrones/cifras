@@ -76320,7 +76320,7 @@ let acordes = [
         "Pestana": false,
         "Corda": 5,
         "Casa": 2
-      };
+      },
       {
         "Numero": 4,
         "Pestana": false,
@@ -79283,4 +79283,4 @@ let acordes = [
       "0"
     ]
   }    
-]
+];
