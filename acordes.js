@@ -32725,9 +32725,28 @@ let acordes = [
   {
     "Id": 4051,
     "Nome": "Fm",
-    "CasaInicial": null,
+    "CasaInicial": 1,
     "CordaInicial": 6,
-    "Dedos": null,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": true,
+        "Corda": 6,
+        "Casa": 1
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 5,
+        "Casa": 3
+      },
+      {
+        "Numero": 3,
+        "Pestana": false,
+        "Corda": 4,
+        "Casa": 3
+      }
+    ],
     "CordasUsadas": [
       "1",
       "3",
@@ -33341,9 +33360,22 @@ let acordes = [
   {
     "Id": 4123,
     "Nome": "Fm7",
-    "CasaInicial": null,
-    "CordaInicial": 6,
-    "Dedos": null,
+    "CasaInicial": 1,
+    "CordaInicial": 5,
+    "Dedos": [
+      {
+        "Numero": 1,
+        "Pestana": true,
+        "Corda": 6,
+        "Casa": 1
+      },
+      {
+        "Numero": 2,
+        "Pestana": false,
+        "Corda": 5,
+        "Casa": 3
+      }
+    ],
     "CordasUsadas": null
   },
   {
